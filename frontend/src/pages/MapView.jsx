@@ -1,8 +1,19 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Navigation, AlertOctagon, Layers } from 'lucide-react';
 import { CHICAGO_COMMUNITY_AREAS } from '../utils/constants';
+import { crimeService } from '../services/crimeService';
 
 const MapView = () => {
+  const [hotspots, setHotspots] = useState(CHICAGO_COMMUNITY_AREAS);
+
+  useEffect(() => {
+    crimeService.getHotspotAreas().then((data) => {
+      if (data && data.length > 0) {
+        setHotspots(data);
+      }
+    });
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -63,29 +74,32 @@ const MapView = () => {
           </h3>
 
           <div className="space-y-2.5 max-h-[350px] overflow-y-auto pr-1">
-            {CHICAGO_COMMUNITY_AREAS.map((area, idx) => (
+            {hotspots.map((area, idx) => (
               <div
                 key={area.id}
                 className="flex items-center justify-between p-3 rounded-xl border border-slate-800/80 bg-slate-950/40 hover:border-slate-700 transition"
               >
                 <div>
                   <h5 className="text-xs font-semibold text-slate-200">{area.name}</h5>
-                  <p className="text-[11px] text-slate-500">District Sector #{area.id}</p>
+                  <p className="text-[11px] text-slate-500">
+                    District Sector #{area.id} {area.incidentCount ? `• ${area.incidentCount.toLocaleString()} incidents` : ''}
+                  </p>
                 </div>
                 <span
                   className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                    idx % 3 === 0
+                    (area.riskLevel === 'High' || idx % 3 === 0)
                       ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                      : idx % 3 === 1
+                      : (area.riskLevel === 'Moderate' || idx % 3 === 1)
                       ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                       : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
                   }`}
                 >
-                  {idx % 3 === 0 ? 'High Risk' : idx % 3 === 1 ? 'Moderate' : 'Normal'}
+                  {area.riskLevel || (idx % 3 === 0 ? 'High Risk' : idx % 3 === 1 ? 'Moderate' : 'Normal')}
                 </span>
               </div>
             ))}
           </div>
+
         </div>
       </div>
     </div>

@@ -1,15 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, BarChart3, TrendingUp, Filter } from 'lucide-react';
+import { crimeService } from '../services/crimeService';
 
 const TrendsView = () => {
-  const trendsData = [
-    { month: 'Jan', theft: 4200, battery: 3100, robbery: 920 },
-    { month: 'Feb', theft: 3900, battery: 2900, robbery: 850 },
-    { month: 'Mar', theft: 4500, battery: 3400, robbery: 980 },
-    { month: 'Apr', theft: 4800, battery: 3800, robbery: 1100 },
-    { month: 'May', theft: 5300, battery: 4200, robbery: 1250 },
-    { month: 'Jun', theft: 5900, battery: 4800, robbery: 1400 },
-  ];
+  const [trendsData, setTrendsData] = useState([]);
+
+  useEffect(() => {
+    crimeService.getCrimeTrends().then((data) => setTrendsData(data));
+  }, []);
+
 
   return (
     <div className="space-y-6">

@@ -13,16 +13,13 @@ const Dashboard = () => {
     highRiskZones: 12,
   });
 
+  const [recentIncidents, setRecentIncidents] = useState([]);
+
   useEffect(() => {
     crimeService.getOverviewStats().then((data) => setStats(data));
+    crimeService.getRecentIncidents().then((data) => setRecentIncidents(data));
   }, []);
 
-  const recentIncidents = [
-    { id: 'JB102934', type: 'THEFT', area: 'Near North Side', time: '14 mins ago', severity: 'Medium' },
-    { id: 'JB102935', type: 'BATTERY', area: 'Englewood', time: '32 mins ago', severity: 'High' },
-    { id: 'JB102936', type: 'CRIMINAL DAMAGE', area: 'Loop (Downtown)', time: '1 hr ago', severity: 'Low' },
-    { id: 'JB102937', type: 'MOTOR VEHICLE THEFT', area: 'Austin', time: '2 hrs ago', severity: 'High' },
-  ];
 
   return (
     <div className="space-y-6">
