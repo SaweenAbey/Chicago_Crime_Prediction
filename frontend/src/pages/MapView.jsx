@@ -1,21 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Navigation, AlertOctagon, Layers } from 'lucide-react';
 import { CHICAGO_COMMUNITY_AREAS } from '../utils/constants';
-import { crimeService } from '../services/crimeService';
+import { crimeService, describeApiError } from '../services/crimeService';
 
 const MapView = () => {
   const [hotspots, setHotspots] = useState(CHICAGO_COMMUNITY_AREAS);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    crimeService.getHotspotAreas().then((data) => {
-      if (data && data.length > 0) {
-        setHotspots(data);
-      }
-    });
+    crimeService
+      .getHotspotAreas()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setHotspots(data);
+        }
+      })
+      .catch((err) => setError(describeApiError(err)));
   }, []);
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+          {error}
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Chicago Community Area Hotspots</h2>

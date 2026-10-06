@@ -18,7 +18,18 @@ import {
   Zap,
   Activity
 } from 'lucide-react';
-import { crimeService } from '../../services/crimeService';
+import { crimeService, describeApiError } from '../../services/crimeService';
+
+// Client-side checks mirror the backend's validation rules (backend/app/schemas.py)
+const validate = (data) => {
+  const errors = [];
+  const inRange = (v, lo, hi) => Number.isFinite(v) && v >= lo && v <= hi;
+  if (!inRange(data.ward, 1, 50) || !Number.isInteger(data.ward)) errors.push('Ward must be a whole number from 1 to 50.');
+  if (!inRange(data.beat, 111, 2535) || !Number.isInteger(data.beat)) errors.push('Beat must be a whole number from 111 to 2535.');
+  if (!inRange(data.latitude, 41.6, 42.1)) errors.push('Latitude must be within Chicago (41.6 to 42.1).');
+  if (!inRange(data.longitude, -87.95, -87.5)) errors.push('Longitude must be within Chicago (-87.95 to -87.5).');
+  return errors;
+};
 
 const PredictionForm = () => {
   const initialArea = CHICAGO_COMMUNITY_AREAS[31]; // Loop (Downtown)
@@ -39,6 +50,7 @@ const PredictionForm = () => {
 
   const [loading, setLoading] = useState(false);
   const [prediction, setPrediction] = useState(null);
+  const [errors, setErrors] = useState([]);
 
   // Handle community area change with auto-sync of administrative coordinates
   const handleCommunityAreaChange = (areaName) => {
@@ -56,12 +68,20 @@ const PredictionForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const problems = validate(formData);
+    setErrors(problems);
+    if (problems.length > 0) {
+      setPrediction(null);
+      return;
+    }
+    const area = CHICAGO_COMMUNITY_AREAS.find((a) => a.name === formData.communityArea);
     setLoading(true);
     try {
-      const res = await crimeService.predictCrime(formData);
+      const res = await crimeService.predictCrime({ ...formData, communityArea: area.id });
       setPrediction(res);
     } catch (err) {
-      console.error(err);
+      setPrediction(null);
+      setErrors([describeApiError(err)]);
     } finally {
       setLoading(false);
     }
@@ -79,7 +99,8 @@ const PredictionForm = () => {
             <div>
               <h2 className="text-lg font-bold text-slate-900">Clean Dataset Input Features</h2>
               <p className="text-xs text-slate-500">
-                Supply spatio-temporal & location parameters to forecast the probable Crime Type
+                Describe when and where an incident happens. The model predicts the most likely crime type.
+                District, ward, beat and coordinates are filled in from the community area and can be adjusted.
               </p>
             </div>
           </div>
@@ -155,8 +176,8 @@ const PredictionForm = () => {
                 type="number"
                 min="1"
                 max="50"
-                value={formData.ward}
-                onChange={(e) => setFormData({ ...formData, ward: parseInt(e.target.value) || 1 })}
+                value={Number.isNaN(formData.ward) ? '' : formData.ward}
+                onChange={(e) => setFormData({ ...formData, ward: parseInt(e.target.value, 10) })}
                 className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 font-medium focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 shadow-sm"
               />
             </div>
@@ -169,8 +190,8 @@ const PredictionForm = () => {
                 type="number"
                 min="100"
                 max="3100"
-                value={formData.beat}
-                onChange={(e) => setFormData({ ...formData, beat: parseInt(e.target.value) || 111 })}
+                value={Number.isNaN(formData.beat) ? '' : formData.beat}
+                onChange={(e) => setFormData({ ...formData, beat: parseInt(e.target.value, 10) })}
                 className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 font-medium focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 shadow-sm"
               />
             </div>
@@ -267,8 +288,8 @@ const PredictionForm = () => {
               <input
                 type="number"
                 step="0.0001"
-                value={formData.latitude}
-                onChange={(e) => setFormData({ ...formData, latitude: parseFloat(e.target.value) || 41.88 })}
+                value={Number.isNaN(formData.latitude) ? '' : formData.latitude}
+                onChange={(e) => setFormData({ ...formData, latitude: parseFloat(e.target.value) })}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 font-mono"
               />
             </div>
@@ -280,12 +301,20 @@ const PredictionForm = () => {
               <input
                 type="number"
                 step="0.0001"
-                value={formData.longitude}
-                onChange={(e) => setFormData({ ...formData, longitude: parseFloat(e.target.value) || -87.62 })}
+                value={Number.isNaN(formData.longitude) ? '' : formData.longitude}
+                onChange={(e) => setFormData({ ...formData, longitude: parseFloat(e.target.value) })}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 font-mono"
               />
             </div>
           </div>
+
+          {errors.length > 0 && (
+            <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700 space-y-1">
+              {errors.map((msg) => (
+                <p key={msg}>{msg}</p>
+              ))}
+            </div>
+          )}
 
           {/* Submit Button */}
           <div className="pt-2">
@@ -318,9 +347,17 @@ const PredictionForm = () => {
               <Activity className="h-4 w-4 text-blue-600" />
               <h3 className="font-bold">ML Prediction Result</h3>
             </div>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold">
-              Random Forest & Spark ML
-            </span>
+            {prediction && (
+              <span
+                className={`text-xs px-2.5 py-0.5 rounded-full border font-bold ${
+                  prediction.isFinalModel
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : 'bg-amber-50 text-amber-800 border-amber-200'
+                }`}
+              >
+                {prediction.modelName}
+              </span>
+            )}
           </div>
 
           {prediction ? (
@@ -333,14 +370,14 @@ const PredictionForm = () => {
                   </span>
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
-                      prediction.riskLevel === 'High'
+                      prediction.severityLevel === 'High'
                         ? 'bg-rose-100 text-rose-800 border border-rose-200'
-                        : prediction.riskLevel === 'Moderate'
+                        : prediction.severityLevel === 'Moderate'
                         ? 'bg-amber-100 text-amber-800 border border-amber-200'
                         : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                     }`}
                   >
-                    {prediction.riskLevel} Severity ({prediction.riskScore}%)
+                    {prediction.severityLevel} severity type
                   </span>
                 </div>
 
@@ -352,8 +389,13 @@ const PredictionForm = () => {
                   <span className="font-bold text-blue-700 font-mono">
                     {(prediction.confidence * 100).toFixed(1)}%
                   </span>
-                  <span>model confidence for top class</span>
+                  <span>model probability for {prediction.area}</span>
                 </div>
+                {prediction.confidence < 0.4 && (
+                  <p className="mt-2 text-[11px] text-slate-500">
+                    No single crime type dominates for this context; consider the full distribution below.
+                  </p>
+                )}
               </div>
 
               {/* Class Probability Distribution */}
@@ -390,25 +432,14 @@ const PredictionForm = () => {
                 </div>
               )}
 
-              {/* Metrics summary */}
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
-                  <span className="text-xs font-bold text-slate-500">Arrest Likelihood</span>
-                  <p className="mt-1 text-lg font-extrabold text-slate-900">
-                    {(Number(prediction.arrestProbability) * 100).toFixed(1)}%
-                  </p>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
-                  <span className="text-xs font-bold text-slate-500">Est. Response Time</span>
-                  <p className="mt-1 text-lg font-extrabold text-emerald-700">{prediction.estimatedResponseTime}</p>
-                </div>
-              </div>
-
               {/* Recommendations */}
               <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                  Recommended Tactical Directives
+                  Suggested Actions
                 </span>
+                <p className="mt-0.5 text-[11px] text-slate-500">
+                  Rule-based guidance generated from the prediction; severity is a fixed grouping of crime types, not a model output.
+                </p>
                 <ul className="mt-2 space-y-1.5 text-xs text-slate-700">
                   {prediction.recommendations.map((rec, i) => (
                     <li key={i} className="flex items-start gap-2">
@@ -427,7 +458,7 @@ const PredictionForm = () => {
               <div>
                 <p className="text-sm font-bold text-slate-700">Awaiting Incident Features</p>
                 <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-                  Adjust the parameters on the left and click Predict to forecast the Crime Type and tactical risk.
+                  Adjust the parameters on the left and click Predict to see the most likely crime types.
                 </p>
               </div>
             </div>

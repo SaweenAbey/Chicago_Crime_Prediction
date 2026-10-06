@@ -1,24 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import MetricCard from '../components/cards/MetricCard';
-import { Shield, TrendingDown, Users, Flame, ArrowUpRight, Activity } from 'lucide-react';
-import { crimeService } from '../services/crimeService';
+import { Shield, Target, Users, Flame, ArrowUpRight, Activity } from 'lucide-react';
+import { crimeService, describeApiError } from '../services/crimeService';
 import { useApp } from '../context/AppContext';
 
 const Dashboard = () => {
   const { setCurrentTab } = useApp();
-  const [stats, setStats] = useState({
-    totalIncidentsYear: '662,472',
-    predictedChange: '-4.8%',
-    arrestRate: '14.1%',
-    highRiskZones: 14,
-  });
-
+  const [stats, setStats] = useState(null);
+  const [modelInfo, setModelInfo] = useState(null);
   const [recentIncidents, setRecentIncidents] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    crimeService.getOverviewStats().then((data) => setStats(data));
-    crimeService.getRecentIncidents().then((data) => setRecentIncidents(data));
+    const fail = (err) => setError(describeApiError(err));
+    crimeService.getOverviewStats().then(setStats).catch(fail);
+    crimeService.getModelInfo().then(setModelInfo).catch(fail);
+    crimeService.getRecentIncidents().then(setRecentIncidents).catch(fail);
   }, []);
+
+  const test = modelInfo?.metrics?.test;
+  const selection = modelInfo?.metrics?.selection;
+  const baselines = modelInfo?.metrics?.baseline_validation ?? [];
+  const pct = (v) => (v == null ? '—' : `${(v * 100).toFixed(1)}%`);
 
   return (
     <div className="space-y-6">
@@ -26,7 +29,7 @@ const Dashboard = () => {
         <div>
           <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Citywide Intelligence Overview</h2>
           <p className="text-sm text-slate-500 font-medium">
-            Real-time Chicago crime analytics & Databricks predictive forecasting telemetry.
+            Chicago crime dataset overview and evaluation results of the crime-type prediction model.
           </p>
         </div>
         <button
@@ -38,39 +41,45 @@ const Dashboard = () => {
         </button>
       </div>
 
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+          {error}
+        </div>
+      )}
+
+      {modelInfo && !modelInfo.isFinalModel && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+          The backend is serving an interim model because final_model_bundle.joblib is not installed.
+          Predictions do not yet come from the selected tuned XGBoost model.
+        </div>
+      )}
+
       {/* Top Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Total Incidents (Clean)"
-          value={stats.totalIncidentsYear}
-          change="-3.2%"
-          changeType="positive"
+          value={stats?.totalIncidentsYear ?? '—'}
           icon={Shield}
-          description="Total processed incidents in dataset"
+          description="Incidents in the cleaned dataset"
         />
         <MetricCard
-          title="Predicted YoY Trend"
-          value={stats.predictedChange}
-          change="Forecasting Downward"
-          changeType="positive"
-          icon={TrendingDown}
-          description="Ensemble time series forecast"
+          title="Final Model Accuracy"
+          value={pct(test?.accuracy)}
+          change={test ? `${test.num_classes} crime types` : undefined}
+          icon={Target}
+          description="Held-out 2026 test split"
         />
         <MetricCard
           title="Citywide Arrest Rate"
-          value={stats.arrestRate}
-          change="+1.1%"
-          changeType="positive"
+          value={stats?.arrestRate ?? '—'}
           icon={Users}
           description="Incidents resulting in arrest"
         />
         <MetricCard
           title="High Risk Hotspots"
-          value={stats.highRiskZones}
-          change="Monitored"
-          changeType="negative"
+          value={stats?.highRiskZones ?? '—'}
           icon={Flame}
-          description="Community areas requiring high patrol"
+          description="Community areas with the most incidents"
         />
       </div>
 
@@ -81,11 +90,10 @@ const Dashboard = () => {
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
             <h3 className="font-bold text-slate-900 flex items-center gap-2">
               <Activity className="h-4 w-4 text-blue-600" />
-              Live Incident Stream
+              Recent Incidents
             </h3>
-            <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Live Synced
+            <span className="text-xs text-slate-600 bg-slate-50 border border-slate-200 px-2.5 py-0.5 rounded-full font-semibold">
+              Dataset sample
             </span>
           </div>
 
@@ -121,44 +129,62 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Model Accuracy & Architecture Summary */}
+        {/* Model evaluation results recorded by notebooks 11-13 */}
         <div className="lg:col-span-5 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm space-y-4">
           <div className="pb-3 border-b border-slate-100">
-            <h3 className="font-bold text-slate-900">Model Performance & Pipelines</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Evaluated on chronological validation & test splits</p>
+            <h3 className="font-bold text-slate-900">Model Performance</h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Chronological split: train before Jul 2025, validate Jul–Dec 2025, test 2026
+            </p>
           </div>
-          
-          <div className="space-y-3.5">
-            <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
-              <div className="flex justify-between text-xs text-slate-700 mb-1.5 font-semibold">
-                <span>Random Forest Classifier</span>
-                <span className="font-bold text-blue-700">89.4% Accuracy</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
-                <div className="h-full bg-blue-600 rounded-full" style={{ width: '89.4%' }}></div>
-              </div>
-            </div>
 
-            <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
-              <div className="flex justify-between text-xs text-slate-700 mb-1.5 font-semibold">
-                <span>XGBoost Hotspot Classifier</span>
-                <span className="font-bold text-indigo-700">92.1% F1 Score</span>
+          {test && selection ? (
+            <>
+              <div className="rounded-xl border border-blue-200 bg-blue-50/60 p-4 space-y-2">
+                <div className="flex justify-between text-xs font-bold text-slate-800">
+                  <span>Final model: {selection.model} ({selection.tag})</span>
+                  <span className="text-blue-700">Test set</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  {[
+                    ['Accuracy', test.accuracy],
+                    ['Macro F1', test.macro_f1],
+                    ['Weighted F1', test.weighted_f1],
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-lg bg-white border border-slate-200 py-2">
+                      <div className="text-base font-extrabold text-slate-900">{pct(value)}</div>
+                      <div className="text-[11px] text-slate-500 font-semibold">{label}</div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[11px] text-slate-600">
+                  Selected by validation macro F1 ({pct(selection.validation_macro_f1)}, +
+                  {(selection.macro_f1_change * 100).toFixed(1)} pts over the untuned baseline).
+                </p>
               </div>
-              <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
-                <div className="h-full bg-indigo-600 rounded-full" style={{ width: '92.1%' }}></div>
-              </div>
-            </div>
 
-            <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
-              <div className="flex justify-between text-xs text-slate-700 mb-1.5 font-semibold">
-                <span>Time-Series Seasonal Split</span>
-                <span className="font-bold text-purple-700">0.042 RMSE</span>
+              <div className="space-y-2.5">
+                <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">Baselines (validation macro F1)</p>
+                {baselines.map((b) => (
+                  <div key={b.model}>
+                    <div className="flex justify-between text-xs text-slate-700 mb-1 font-semibold">
+                      <span>{b.model}</span>
+                      <span className="font-mono">{pct(b.macro_f1)}</span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+                      <div
+                        className="h-full bg-blue-600 rounded-full"
+                        style={{ width: `${(b.macro_f1 / 0.2) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+                <p className="text-[11px] text-slate-500">Bars scaled to 20% macro F1 for readability.</p>
               </div>
-              <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
-                <div className="h-full bg-purple-600 rounded-full" style={{ width: '95%' }}></div>
-              </div>
-            </div>
-          </div>
+            </>
+          ) : (
+            <p className="text-sm text-slate-500">Loading model metrics…</p>
+          )}
         </div>
       </div>
     </div>

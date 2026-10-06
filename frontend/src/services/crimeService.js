@@ -1,116 +1,53 @@
 import api from './api';
 
+/**
+ * Turn an axios error into a readable message.
+ * FastAPI validation errors (422) arrive as a list of { loc, msg } objects.
+ */
+export function describeApiError(error) {
+  if (!error.response) {
+    return 'Cannot reach the prediction API. Make sure the backend is running on port 8000.';
+  }
+  const { status, data } = error.response;
+  if (Array.isArray(data?.detail)) {
+    return data.detail
+      .map((d) => `${d.loc?.[d.loc.length - 1] ?? 'input'}: ${d.msg}`)
+      .join(' • ');
+  }
+  return data?.detail || `Request failed (HTTP ${status}).`;
+}
+
+// No mock fallbacks: if the backend fails, callers receive the error and show it to the user.
 export const crimeService = {
-  /**
-   * Predict crime probability / category or arrest likelihood
-   */
+  /** Predict the most likely crime type (primary_type) for an incident context */
   async predictCrime(payload) {
-    try {
-      const response = await api.post('/api/predict', payload);
-      return response.data;
-    } catch (error) {
-      console.warn('API fallback:', error.message);
-      const isDomestic = !!payload.domestic;
-      const defaultCategory = isDomestic ? 'BATTERY' : (payload.locationDescription === 'APARTMENT' ? 'BURGLARY' : 'THEFT');
-      return {
-        success: true,
-        riskScore: isDomestic ? 75 : 64,
-        riskLevel: isDomestic ? 'High' : 'Moderate',
-        arrestProbability: isDomestic ? 0.48 : 0.22,
-        confidence: 0.68,
-        predictedCategory: defaultCategory,
-        primaryHotspot: payload.communityArea || 'Loop (Downtown)',
-        estimatedResponseTime: isDomestic ? '3.8 mins' : '5.2 mins',
-        topProbabilities: isDomestic
-          ? [
-              { category: 'BATTERY', probability: 0.48 },
-              { category: 'ASSAULT', probability: 0.24 },
-              { category: 'CRIMINAL DAMAGE', probability: 0.16 },
-              { category: 'OTHER OFFENSE', probability: 0.12 }
-            ]
-          : [
-              { category: 'THEFT', probability: 0.44 },
-              { category: 'BATTERY', probability: 0.24 },
-              { category: 'MOTOR VEHICLE THEFT', probability: 0.18 },
-              { category: 'CRIMINAL DAMAGE', probability: 0.14 }
-            ],
-        recommendations: [
-          `Prioritize patrol units in ${payload.communityArea || 'sector'} grid.`,
-          'Deploy automated surveillance and transit hub monitoring.',
-          'Coordinate field verification with local district beat officers.'
-        ]
-      };
-    }
+    const response = await api.post('/api/predict', payload);
+    return response.data;
   },
 
-  /**
-   * Get citywide crime statistics and overview metrics
-   */
+  /** Final model metrics recorded by notebooks 11-13 */
+  async getModelInfo() {
+    const response = await api.get('/api/model/info');
+    return response.data;
+  },
+
   async getOverviewStats() {
-    try {
-      const response = await api.get('/api/stats/overview');
-      return response.data;
-    } catch (error) {
-      return {
-        totalIncidentsYear: '238,420',
-        predictedChange: '-4.8%',
-        arrestRate: '21.4%',
-        highRiskZones: 12,
-        modelsActive: 'Random Forest & XGBoost Ensemble'
-      };
-    }
+    const response = await api.get('/api/stats/overview');
+    return response.data;
   },
 
-  /**
-   * Get multi-month historical and predicted trends
-   */
   async getCrimeTrends() {
-    try {
-      const response = await api.get('/api/stats/trends');
-      return response.data;
-    } catch (error) {
-      return [
-        { month: 'Jan', theft: 4200, battery: 3100, robbery: 920, other: 2100 },
-        { month: 'Feb', theft: 3900, battery: 2900, robbery: 850, other: 1950 },
-        { month: 'Mar', theft: 4500, battery: 3400, robbery: 980, other: 2250 },
-        { month: 'Apr', theft: 4800, battery: 3800, robbery: 1100, other: 2400 },
-        { month: 'May', theft: 5300, battery: 4200, robbery: 1250, other: 2700 },
-        { month: 'Jun', theft: 5900, battery: 4800, robbery: 1400, other: 3100 },
-      ];
-    }
+    const response = await api.get('/api/stats/trends');
+    return response.data;
   },
 
-  /**
-   * Get hotspot community areas
-   */
   async getHotspotAreas() {
-    try {
-      const response = await api.get('/api/stats/hotspots');
-      return response.data;
-    } catch (error) {
-      return [
-        { id: 8, name: 'Near North Side', riskLevel: 'High', incidentCount: 18450, latitude: 41.8996, longitude: -87.6333 },
-        { id: 32, name: 'Loop (Downtown)', riskLevel: 'High', incidentCount: 21200, latitude: 41.8819, longitude: -87.6278 },
-        { id: 25, name: 'Austin', riskLevel: 'High', incidentCount: 19800, latitude: 41.8924, longitude: -87.7654 },
-        { id: 68, name: 'Englewood', riskLevel: 'High', incidentCount: 14320, latitude: 41.7753, longitude: -87.6416 },
-      ];
-    }
+    const response = await api.get('/api/stats/hotspots');
+    return response.data;
   },
 
-  /**
-   * Get recent incidents stream
-   */
   async getRecentIncidents() {
-    try {
-      const response = await api.get('/api/incidents/recent');
-      return response.data;
-    } catch (error) {
-      return [
-        { id: 'JB102934', type: 'THEFT', area: 'Near North Side', location: 'STREET', time: '14 mins ago', severity: 'Medium', arrest: false },
-        { id: 'JB102935', type: 'BATTERY', area: 'Englewood', location: 'RESIDENCE', time: '32 mins ago', severity: 'High', arrest: true },
-        { id: 'JB102936', type: 'CRIMINAL DAMAGE', area: 'Loop (Downtown)', location: 'PARKING LOT', time: '1 hr ago', severity: 'Low', arrest: false },
-        { id: 'JB102937', type: 'MOTOR VEHICLE THEFT', area: 'Austin', location: 'STREET', time: '2 hrs ago', severity: 'High', arrest: false },
-      ];
-    }
+    const response = await api.get('/api/incidents/recent');
+    return response.data;
   }
 };

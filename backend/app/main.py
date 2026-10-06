@@ -8,12 +8,13 @@ from .config import ALLOWED_ORIGINS, CLEAN_DATA_FILE
 from .schemas import (
     CrimePredictionRequest,
     CrimePredictionResponse,
+    ModelInfoResponse,
     OverviewStatsResponse,
     HotspotArea,
     TrendMonth,
     RecentIncident
 )
-from .prediction import predictor, CHICAGO_AREAS_DATA
+from .prediction import predictor, CHICAGO_AREAS_DATA, InvalidInputError
 
 app = FastAPI(
     title="Chicago Crime AI Prediction API",
@@ -25,8 +26,8 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -89,10 +90,9 @@ def get_or_load_data_stats():
 
             _STATS_CACHE['overview'] = OverviewStatsResponse(
                 totalIncidentsYear=total_count,
-                predictedChange="-4.8%",
                 arrestRate=arrest_rate,
-                highRiskZones=14,
-                modelsActive="Random Forest & Spark ML Pipeline"
+                highRiskZones=sum(1 for h in hotspots if h.riskLevel == "High"),
+                modelsActive=predictor.model_name
             )
             _STATS_CACHE['hotspots'] = hotspots
             _STATS_CACHE['recent'] = recent_list
@@ -115,16 +115,28 @@ def root():
 def health_check():
     return {
         "status": "healthy",
-        "model_loaded": predictor.model is not None,
-        "label_encoder_loaded": predictor.label_encoder is not None
+        "model_loaded": predictor.is_loaded,
+        "final_model_loaded": predictor.is_final,
+        "active_model": predictor.model_name
     }
+
+@app.get("/api/model/info", response_model=ModelInfoResponse)
+def model_info():
+    """Evaluation results of the final selected model, as recorded by notebooks 11-13."""
+    return ModelInfoResponse(
+        activeModel=predictor.model_name,
+        isFinalModel=predictor.is_final,
+        metrics=predictor.metrics
+    )
 
 @app.post("/api/predict", response_model=CrimePredictionResponse)
 def predict_crime(request: CrimePredictionRequest):
+    if not predictor.is_loaded:
+        raise HTTPException(status_code=503, detail="No model is loaded on the server.")
     try:
         return predictor.predict(request)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except InvalidInputError as e:
+        raise HTTPException(status_code=422, detail=str(e))
 
 @app.get("/api/stats/overview", response_model=OverviewStatsResponse)
 def get_overview_stats():
@@ -133,10 +145,9 @@ def get_overview_stats():
         return cache['overview']
     return OverviewStatsResponse(
         totalIncidentsYear="662,472",
-        predictedChange="-4.8%",
-        arrestRate="14.2%",
-        highRiskZones=14,
-        modelsActive="Random Forest & Spark ML Pipeline"
+        arrestRate="n/a (dataset not loaded)",
+        highRiskZones=4,
+        modelsActive=predictor.model_name
     )
 
 @app.get("/api/stats/trends", response_model=List[TrendMonth])
@@ -181,25 +192,3 @@ def get_recent_incidents():
         RecentIncident(id="JB102938", type="ROBBERY", area="West Town", location="SIDEWALK", time="3 hrs ago", severity="High", arrest=False),
         RecentIncident(id="JB102939", type="WEAPONS VIOLATION", area="Auburn Gresham", location="ALLEY", time="4 hrs ago", severity="High", arrest=True),
     ]
-
-@app.post("/api/pipeline/run")
-def trigger_pipeline_run():
-    """Triggers end-to-end execution of all Databricks pipeline stages 01-13 and refreshes models."""
-    try:
-        import subprocess
-        import sys
-        
-        pipeline_script = Path(__file__).resolve().parent.parent.parent / "databricks" / "run_all_pipeline.py"
-        if pipeline_script.exists():
-            proc = subprocess.run([sys.executable, str(pipeline_script)], capture_output=True, text=True, timeout=180)
-            predictor._load_artifacts()
-            _STATS_CACHE.clear()
-            return {
-                "success": True,
-                "message": "All Databricks pipeline stages (01-13) executed and backend models refreshed.",
-                "output": proc.stdout[-500:] if proc.stdout else "Success"
-            }
-        else:
-            raise FileNotFoundError(f"Pipeline script not found: {pipeline_script}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))

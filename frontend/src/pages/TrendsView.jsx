@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, BarChart3, Filter } from 'lucide-react';
-import { crimeService } from '../services/crimeService';
+import { crimeService, describeApiError } from '../services/crimeService';
 
 const TrendsView = () => {
   const [trendsData, setTrendsData] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    crimeService.getCrimeTrends().then((data) => setTrendsData(data));
+    crimeService
+      .getCrimeTrends()
+      .then((data) => setTrendsData(data))
+      .catch((err) => setError(describeApiError(err)));
   }, []);
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+          {error}
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Historical Crime Analytics</h2>
