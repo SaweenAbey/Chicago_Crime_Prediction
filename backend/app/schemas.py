@@ -1,15 +1,18 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Union
 
 class CrimePredictionRequest(BaseModel):
-    crimeType: Optional[str] = "THEFT"
     locationDescription: str = "STREET"
-    communityArea: str = "Loop (Downtown)"
+    communityArea: Union[str, int] = "Loop (Downtown)"
+    district: Optional[int] = 1
+    ward: Optional[int] = 42
+    beat: Optional[int] = 111
     hourOfDay: int = Field(default=18, ge=0, le=23)
     dayOfWeek: str = "Friday"
     month: Optional[int] = Field(default=6, ge=1, le=12)
-    district: Optional[int] = 1
     domestic: bool = False
+    latitude: Optional[float] = 41.8819
+    longitude: Optional[float] = -87.6278
 
 class PredictionProbability(BaseModel):
     category: str

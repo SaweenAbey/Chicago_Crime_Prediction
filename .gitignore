@@ -5,6 +5,14 @@ data/
 *.zip
 *.tar.gz
 
+# Databricks local artifacts & caches
+databricks/artifacts/
+databricks/**/data/
+databricks/**/spark-warehouse/
+spark-warehouse/
+*.npy
+*.npz
+
 # Python
 __pycache__/
 *.py[cod]
@@ -17,10 +25,8 @@ venv/
 .venv/
 env/
 
-# Backend models & env
+# Backend env
 backend/.env
-backend/models/*.joblib
-backend/models/*.pkl
 
 # Frontend & Node
 node_modules/

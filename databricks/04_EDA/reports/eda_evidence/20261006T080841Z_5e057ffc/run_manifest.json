@@ -1,0 +1,88 @@
+{
+  "run_id": "20261006T080841Z_5e057ffc",
+  "clean_table": "workspace.default.chicago_crime_clean",
+  "source_delta_version": 1,
+  "features_table": "",
+  "spark_version": "4.2.0",
+  "session_timezone": "UTC",
+  "observed_metadata": {
+    "rows": 662472,
+    "start": "2024-01-01 05:30:00",
+    "end": "2026-09-16 05:30:00",
+    "null_dates": 0,
+    "null_targets": 0
+  },
+  "class_imbalance": {
+    "classes": 31,
+    "largest_class": "THEFT",
+    "smallest_class": "NON-CRIMINAL",
+    "largest_smallest_ratio": 16808.777777777777,
+    "majority_share_pct": 22.835531162071756,
+    "classes_below_100": 5,
+    "top_5_share_pct": 68.73332004975305
+  },
+  "zone_status": "Pending Member 3: no features_table supplied.",
+  "figures": [
+    "01_primary_type",
+    "02_yearly_counts",
+    "03_matched_years",
+    "04_monthly_trend",
+    "05_hourly_counts",
+    "06_weekday_counts",
+    "07_district",
+    "07_community_area",
+    "07_ward",
+    "07_beat",
+    "08_missing_values",
+    "09_coordinate_density",
+    "10_location_description",
+    "11_type_by_eda_hour",
+    "11_type_by_eda_weekday",
+    "11_type_by_eda_month",
+    "11_type_by_district",
+    "11_type_by_community_area",
+    "11_type_by_location_description",
+    "11_type_by_domestic",
+    "12_daily_review"
+  ],
+  "tables": [
+    "class_distribution",
+    "class_imbalance_summary",
+    "yearly_counts",
+    "matched_calendar_window",
+    "monthly_counts",
+    "hourly_counts",
+    "weekday_counts",
+    "district_counts",
+    "community_area_counts",
+    "ward_counts",
+    "beat_counts",
+    "missing_values",
+    "coordinate_coverage",
+    "coordinate_coverage_by_class",
+    "coordinate_grid",
+    "location_description_counts",
+    "crime_type_by_eda_hour",
+    "crime_type_by_eda_weekday",
+    "crime_type_by_eda_month",
+    "crime_type_by_district",
+    "crime_type_by_community_area",
+    "crime_type_by_location_description",
+    "crime_type_by_domestic",
+    "daily_counts_and_flags",
+    "unusual_daily_totals",
+    "sparse_geographic_groups"
+  ],
+  "coordinate_grid_degrees": 0.01,
+  "coordinate_screen": {
+    "latitude": [
+      41,
+      43
+    ],
+    "longitude": [
+      -89,
+      -87
+    ]
+  },
+  "notes": "Source table is read only and pinned to the recorded Delta version."
+}
