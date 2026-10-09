@@ -10,8 +10,7 @@ import MapView from './pages/MapView';
 const MainContent = () => {
   const { currentTab } = useApp();
 
-  return 
-  (
+  return (
     <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl w-full mx-auto bg-slate-50">
       {currentTab === 'dashboard' && <Dashboard />}
       {currentTab === 'predict' && <CrimePredictor />}

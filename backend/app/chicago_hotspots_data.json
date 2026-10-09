@@ -1,0 +1,1773 @@
+[
+  {
+    "id": 25,
+    "name": "Austin",
+    "district": 15,
+    "riskLevel": "High",
+    "incidentCount": 33124,
+    "latitude": 41.8924,
+    "longitude": -87.7654,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 7359
+      },
+      {
+        "type": "THEFT",
+        "count": 5203
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 3562
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Near North Side",
+    "district": 18,
+    "riskLevel": "High",
+    "incidentCount": 29984,
+    "latitude": 41.8996,
+    "longitude": -87.6333,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 12102
+      },
+      {
+        "type": "BATTERY",
+        "count": 4167
+      },
+      {
+        "type": "DECEPTIVE PRACTICE",
+        "count": 3196
+      }
+    ]
+  },
+  {
+    "id": 28,
+    "name": "Near West Side",
+    "district": 12,
+    "riskLevel": "High",
+    "incidentCount": 28734,
+    "latitude": 41.8744,
+    "longitude": -87.6633,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 8419
+      },
+      {
+        "type": "BATTERY",
+        "count": 4072
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 3238
+      }
+    ]
+  },
+  {
+    "id": 32,
+    "name": "Loop (Downtown)",
+    "district": 1,
+    "riskLevel": "High",
+    "incidentCount": 23553,
+    "latitude": 41.8819,
+    "longitude": -87.6278,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 9165
+      },
+      {
+        "type": "BATTERY",
+        "count": 3115
+      },
+      {
+        "type": "DECEPTIVE PRACTICE",
+        "count": 2271
+      }
+    ]
+  },
+  {
+    "id": 43,
+    "name": "South Shore",
+    "district": 3,
+    "riskLevel": "High",
+    "incidentCount": 22551,
+    "latitude": 41.7606,
+    "longitude": -87.5756,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 4966
+      },
+      {
+        "type": "THEFT",
+        "count": 3621
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 2866
+      }
+    ]
+  },
+  {
+    "id": 24,
+    "name": "West Town",
+    "district": 12,
+    "riskLevel": "High",
+    "incidentCount": 20048,
+    "latitude": 41.8979,
+    "longitude": -87.6833,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 6416
+      },
+      {
+        "type": "MOTOR VEHICLE THEFT",
+        "count": 2336
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 2317
+      }
+    ]
+  },
+  {
+    "id": 23,
+    "name": "Humboldt Park",
+    "district": 14,
+    "riskLevel": "High",
+    "incidentCount": 17694,
+    "latitude": 41.9022,
+    "longitude": -87.7214,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 3318
+      },
+      {
+        "type": "NARCOTICS",
+        "count": 2807
+      },
+      {
+        "type": "THEFT",
+        "count": 2484
+      }
+    ]
+  },
+  {
+    "id": 29,
+    "name": "North Lawndale",
+    "district": 10,
+    "riskLevel": "High",
+    "incidentCount": 17288,
+    "latitude": 41.8587,
+    "longitude": -87.7139,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 4040
+      },
+      {
+        "type": "THEFT",
+        "count": 2078
+      },
+      {
+        "type": "NARCOTICS",
+        "count": 1928
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Lake View",
+    "district": 19,
+    "riskLevel": "High",
+    "incidentCount": 17108,
+    "latitude": 41.9427,
+    "longitude": -87.6534,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 6850
+      },
+      {
+        "type": "BATTERY",
+        "count": 2191
+      },
+      {
+        "type": "DECEPTIVE PRACTICE",
+        "count": 1733
+      }
+    ]
+  },
+  {
+    "id": 69,
+    "name": "Greater Grand Crossing",
+    "district": 3,
+    "riskLevel": "High",
+    "incidentCount": 17027,
+    "latitude": 41.7606,
+    "longitude": -87.6189,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 3868
+      },
+      {
+        "type": "THEFT",
+        "count": 2445
+      },
+      {
+        "type": "ASSAULT",
+        "count": 1966
+      }
+    ]
+  },
+  {
+    "id": 71,
+    "name": "Auburn Gresham",
+    "district": 6,
+    "riskLevel": "High",
+    "incidentCount": 16890,
+    "latitude": 41.7439,
+    "longitude": -87.6556,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 3519
+      },
+      {
+        "type": "THEFT",
+        "count": 2484
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 2378
+      }
+    ]
+  },
+  {
+    "id": 44,
+    "name": "Chatham",
+    "district": 6,
+    "riskLevel": "Moderate",
+    "incidentCount": 14822,
+    "latitude": 41.7439,
+    "longitude": -87.6133,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 3019
+      },
+      {
+        "type": "THEFT",
+        "count": 2804
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1755
+      }
+    ]
+  },
+  {
+    "id": 49,
+    "name": "Roseland",
+    "district": 5,
+    "riskLevel": "Moderate",
+    "incidentCount": 14626,
+    "latitude": 41.7006,
+    "longitude": -87.6256,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 2869
+      },
+      {
+        "type": "THEFT",
+        "count": 2218
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1924
+      }
+    ]
+  },
+  {
+    "id": 68,
+    "name": "Englewood",
+    "district": 7,
+    "riskLevel": "Moderate",
+    "incidentCount": 13325,
+    "latitude": 41.7753,
+    "longitude": -87.6416,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 3168
+      },
+      {
+        "type": "THEFT",
+        "count": 1690
+      },
+      {
+        "type": "ASSAULT",
+        "count": 1546
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "name": "Logan Square",
+    "district": 14,
+    "riskLevel": "Moderate",
+    "incidentCount": 13293,
+    "latitude": 41.9231,
+    "longitude": -87.7093,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 4790
+      },
+      {
+        "type": "BATTERY",
+        "count": 1601
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1436
+      }
+    ]
+  },
+  {
+    "id": 66,
+    "name": "Chicago Lawn",
+    "district": 8,
+    "riskLevel": "Moderate",
+    "incidentCount": 13257,
+    "latitude": 41.7722,
+    "longitude": -87.6933,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 2809
+      },
+      {
+        "type": "THEFT",
+        "count": 1940
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1503
+      }
+    ]
+  },
+  {
+    "id": 67,
+    "name": "West Englewood",
+    "district": 7,
+    "riskLevel": "Moderate",
+    "incidentCount": 12010,
+    "latitude": 41.7753,
+    "longitude": -87.6667,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 2600
+      },
+      {
+        "type": "THEFT",
+        "count": 1588
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1495
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Uptown",
+    "district": 19,
+    "riskLevel": "Moderate",
+    "incidentCount": 11610,
+    "latitude": 41.9658,
+    "longitude": -87.6533,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 3642
+      },
+      {
+        "type": "BATTERY",
+        "count": 2092
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1071
+      }
+    ]
+  },
+  {
+    "id": 19,
+    "name": "Belmont Cragin",
+    "district": 25,
+    "riskLevel": "Moderate",
+    "incidentCount": 11610,
+    "latitude": 41.9264,
+    "longitude": -87.7658,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 2533
+      },
+      {
+        "type": "BATTERY",
+        "count": 2163
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1166
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Lincoln Park",
+    "district": 18,
+    "riskLevel": "Moderate",
+    "incidentCount": 10928,
+    "latitude": 41.9214,
+    "longitude": -87.6513,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 4846
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1020
+      },
+      {
+        "type": "DECEPTIVE PRACTICE",
+        "count": 965
+      }
+    ]
+  },
+  {
+    "id": 30,
+    "name": "South Lawndale",
+    "district": 10,
+    "riskLevel": "Moderate",
+    "incidentCount": 10545,
+    "latitude": 41.8384,
+    "longitude": -87.7139,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 2482
+      },
+      {
+        "type": "THEFT",
+        "count": 1806
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1179
+      }
+    ]
+  },
+  {
+    "id": 1,
+    "name": "Rogers Park",
+    "district": 24,
+    "riskLevel": "Moderate",
+    "incidentCount": 10506,
+    "latitude": 42.0098,
+    "longitude": -87.6698,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 2873
+      },
+      {
+        "type": "BATTERY",
+        "count": 2099
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1028
+      }
+    ]
+  },
+  {
+    "id": 61,
+    "name": "New City (Back of the Yards)",
+    "district": 9,
+    "riskLevel": "Moderate",
+    "incidentCount": 10369,
+    "latitude": 41.8067,
+    "longitude": -87.6589,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 2255
+      },
+      {
+        "type": "THEFT",
+        "count": 1714
+      },
+      {
+        "type": "ASSAULT",
+        "count": 1228
+      }
+    ]
+  },
+  {
+    "id": 46,
+    "name": "South Chicago",
+    "district": 4,
+    "riskLevel": "Moderate",
+    "incidentCount": 10267,
+    "latitude": 41.7397,
+    "longitude": -87.5533,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 2186
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1475
+      },
+      {
+        "type": "THEFT",
+        "count": 1453
+      }
+    ]
+  },
+  {
+    "id": 42,
+    "name": "Woodlawn",
+    "district": 3,
+    "riskLevel": "Moderate",
+    "incidentCount": 10132,
+    "latitude": 41.7806,
+    "longitude": -87.5933,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 2052
+      },
+      {
+        "type": "THEFT",
+        "count": 1893
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1239
+      }
+    ]
+  },
+  {
+    "id": 27,
+    "name": "East Garfield Park",
+    "district": 11,
+    "riskLevel": "Moderate",
+    "incidentCount": 10100,
+    "latitude": 41.8819,
+    "longitude": -87.7022,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 2216
+      },
+      {
+        "type": "THEFT",
+        "count": 1367
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1131
+      }
+    ]
+  },
+  {
+    "id": 38,
+    "name": "Grand Boulevard",
+    "district": 2,
+    "riskLevel": "Moderate",
+    "incidentCount": 9719,
+    "latitude": 41.8128,
+    "longitude": -87.6178,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1868
+      },
+      {
+        "type": "BATTERY",
+        "count": 1703
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1362
+      }
+    ]
+  },
+  {
+    "id": 26,
+    "name": "West Garfield Park",
+    "district": 11,
+    "riskLevel": "Moderate",
+    "incidentCount": 9594,
+    "latitude": 41.8794,
+    "longitude": -87.7289,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 2088
+      },
+      {
+        "type": "NARCOTICS",
+        "count": 1381
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1018
+      }
+    ]
+  },
+  {
+    "id": 53,
+    "name": "West Pullman",
+    "district": 5,
+    "riskLevel": "Moderate",
+    "incidentCount": 9277,
+    "latitude": 41.6744,
+    "longitude": -87.6333,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 1719
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1323
+      },
+      {
+        "type": "THEFT",
+        "count": 1317
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "West Ridge",
+    "district": 24,
+    "riskLevel": "Moderate",
+    "incidentCount": 9249,
+    "latitude": 42.0006,
+    "longitude": -87.6925,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 2066
+      },
+      {
+        "type": "BATTERY",
+        "count": 1673
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 1089
+      }
+    ]
+  },
+  {
+    "id": 77,
+    "name": "Edgewater",
+    "district": 24,
+    "riskLevel": "Moderate",
+    "incidentCount": 8540,
+    "latitude": 41.9847,
+    "longitude": -87.6611,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 2738
+      },
+      {
+        "type": "BATTERY",
+        "count": 1404
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 788
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "name": "Portage Park",
+    "district": 16,
+    "riskLevel": "Moderate",
+    "incidentCount": 8386,
+    "latitude": 41.9537,
+    "longitude": -87.7644,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 2165
+      },
+      {
+        "type": "BATTERY",
+        "count": 1298
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 844
+      }
+    ]
+  },
+  {
+    "id": 31,
+    "name": "Lower West Side",
+    "district": 12,
+    "riskLevel": "Moderate",
+    "incidentCount": 7801,
+    "latitude": 41.8542,
+    "longitude": -87.6698,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1847
+      },
+      {
+        "type": "BATTERY",
+        "count": 1533
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 857
+      }
+    ]
+  },
+  {
+    "id": 35,
+    "name": "Douglas",
+    "district": 2,
+    "riskLevel": "Moderate",
+    "incidentCount": 7782,
+    "latitude": 41.8344,
+    "longitude": -87.6189,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1725
+      },
+      {
+        "type": "BATTERY",
+        "count": 1362
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 988
+      }
+    ]
+  },
+  {
+    "id": 73,
+    "name": "Washington Heights",
+    "district": 22,
+    "riskLevel": "Moderate",
+    "incidentCount": 7594,
+    "latitude": 41.7167,
+    "longitude": -87.6489,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1482
+      },
+      {
+        "type": "BATTERY",
+        "count": 1255
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 974
+      }
+    ]
+  },
+  {
+    "id": 33,
+    "name": "Near South Side",
+    "district": 1,
+    "riskLevel": "Normal",
+    "incidentCount": 6808,
+    "latitude": 41.8566,
+    "longitude": -87.6244,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1535
+      },
+      {
+        "type": "BATTERY",
+        "count": 1146
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 677
+      }
+    ]
+  },
+  {
+    "id": 41,
+    "name": "Hyde Park",
+    "district": 2,
+    "riskLevel": "Normal",
+    "incidentCount": 6729,
+    "latitude": 41.7944,
+    "longitude": -87.5933,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 2375
+      },
+      {
+        "type": "BATTERY",
+        "count": 793
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 780
+      }
+    ]
+  },
+  {
+    "id": 40,
+    "name": "Washington Park",
+    "district": 2,
+    "riskLevel": "Normal",
+    "incidentCount": 6661,
+    "latitude": 41.7944,
+    "longitude": -87.6189,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 1595
+      },
+      {
+        "type": "THEFT",
+        "count": 915
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 798
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "name": "Irving Park",
+    "district": 17,
+    "riskLevel": "Normal",
+    "incidentCount": 6601,
+    "latitude": 41.9535,
+    "longitude": -87.7189,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1445
+      },
+      {
+        "type": "BATTERY",
+        "count": 1126
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 752
+      }
+    ]
+  },
+  {
+    "id": 63,
+    "name": "Gage Park",
+    "district": 8,
+    "riskLevel": "Normal",
+    "incidentCount": 6389,
+    "latitude": 41.7933,
+    "longitude": -87.6989,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1612
+      },
+      {
+        "type": "BATTERY",
+        "count": 1199
+      },
+      {
+        "type": "ASSAULT",
+        "count": 624
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "name": "Albany Park",
+    "district": 17,
+    "riskLevel": "Normal",
+    "incidentCount": 6316,
+    "latitude": 41.9683,
+    "longitude": -87.728,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1358
+      },
+      {
+        "type": "BATTERY",
+        "count": 1220
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 768
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "name": "Avondale",
+    "district": 14,
+    "riskLevel": "Normal",
+    "incidentCount": 6180,
+    "latitude": 41.9387,
+    "longitude": -87.7099,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 2175
+      },
+      {
+        "type": "BATTERY",
+        "count": 816
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 639
+      }
+    ]
+  },
+  {
+    "id": 70,
+    "name": "Ashburn",
+    "district": 8,
+    "riskLevel": "Normal",
+    "incidentCount": 5804,
+    "latitude": 41.7467,
+    "longitude": -87.7089,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 1006
+      },
+      {
+        "type": "THEFT",
+        "count": 959
+      },
+      {
+        "type": "MOTOR VEHICLE THEFT",
+        "count": 777
+      }
+    ]
+  },
+  {
+    "id": 58,
+    "name": "Brighton Park",
+    "district": 9,
+    "riskLevel": "Normal",
+    "incidentCount": 5737,
+    "latitude": 41.8189,
+    "longitude": -87.6989,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 1193
+      },
+      {
+        "type": "THEFT",
+        "count": 1015
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 647
+      }
+    ]
+  },
+  {
+    "id": 39,
+    "name": "Kenwood",
+    "district": 2,
+    "riskLevel": "Normal",
+    "incidentCount": 5667,
+    "latitude": 41.8089,
+    "longitude": -87.5933,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1341
+      },
+      {
+        "type": "BATTERY",
+        "count": 907
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 855
+      }
+    ]
+  },
+  {
+    "id": 56,
+    "name": "Garfield Ridge",
+    "district": 8,
+    "riskLevel": "Normal",
+    "incidentCount": 5656,
+    "latitude": 41.7944,
+    "longitude": -87.7689,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 975
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 846
+      },
+      {
+        "type": "BATTERY",
+        "count": 764
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Lincoln Square",
+    "district": 19,
+    "riskLevel": "Normal",
+    "incidentCount": 5257,
+    "latitude": 41.9699,
+    "longitude": -87.6887,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1634
+      },
+      {
+        "type": "BATTERY",
+        "count": 791
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 515
+      }
+    ]
+  },
+  {
+    "id": 75,
+    "name": "Morgan Park",
+    "district": 22,
+    "riskLevel": "Normal",
+    "incidentCount": 5114,
+    "latitude": 41.6889,
+    "longitude": -87.6689,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1083
+      },
+      {
+        "type": "BATTERY",
+        "count": 984
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 602
+      }
+    ]
+  },
+  {
+    "id": 51,
+    "name": "South Deering",
+    "district": 4,
+    "riskLevel": "Normal",
+    "incidentCount": 4945,
+    "latitude": 41.6856,
+    "longitude": -87.5678,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1021
+      },
+      {
+        "type": "BATTERY",
+        "count": 876
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 701
+      }
+    ]
+  },
+  {
+    "id": 65,
+    "name": "West Lawn",
+    "district": 8,
+    "riskLevel": "Normal",
+    "incidentCount": 4944,
+    "latitude": 41.7722,
+    "longitude": -87.7289,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1225
+      },
+      {
+        "type": "BATTERY",
+        "count": 786
+      },
+      {
+        "type": "MOTOR VEHICLE THEFT",
+        "count": 594
+      }
+    ]
+  },
+  {
+    "id": 60,
+    "name": "Bridgeport",
+    "district": 9,
+    "riskLevel": "Normal",
+    "incidentCount": 4491,
+    "latitude": 41.8364,
+    "longitude": -87.6489,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1051
+      },
+      {
+        "type": "BATTERY",
+        "count": 709
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 547
+      }
+    ]
+  },
+  {
+    "id": 76,
+    "name": "O'Hare",
+    "district": 16,
+    "riskLevel": "Normal",
+    "incidentCount": 4396,
+    "latitude": 41.9786,
+    "longitude": -87.9047,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1349
+      },
+      {
+        "type": "BATTERY",
+        "count": 672
+      },
+      {
+        "type": "DECEPTIVE PRACTICE",
+        "count": 500
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "name": "Dunning",
+    "district": 16,
+    "riskLevel": "Normal",
+    "incidentCount": 4119,
+    "latitude": 41.9472,
+    "longitude": -87.8066,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 768
+      },
+      {
+        "type": "THEFT",
+        "count": 738
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 477
+      }
+    ]
+  },
+  {
+    "id": 52,
+    "name": "East Side",
+    "district": 4,
+    "riskLevel": "Normal",
+    "incidentCount": 3619,
+    "latitude": 41.7067,
+    "longitude": -87.5356,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 647
+      },
+      {
+        "type": "THEFT",
+        "count": 549
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 533
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "name": "Hermosa",
+    "district": 25,
+    "riskLevel": "Normal",
+    "incidentCount": 3559,
+    "latitude": 41.9215,
+    "longitude": -87.7344,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 705
+      },
+      {
+        "type": "THEFT",
+        "count": 626
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 393
+      }
+    ]
+  },
+  {
+    "id": 48,
+    "name": "Calumet Heights",
+    "district": 4,
+    "riskLevel": "Normal",
+    "incidentCount": 3559,
+    "latitude": 41.7289,
+    "longitude": -87.5656,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 625
+      },
+      {
+        "type": "BATTERY",
+        "count": 573
+      },
+      {
+        "type": "MOTOR VEHICLE THEFT",
+        "count": 496
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "North Center",
+    "district": 19,
+    "riskLevel": "Normal",
+    "incidentCount": 3511,
+    "latitude": 41.9509,
+    "longitude": -87.6877,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 1013
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 437
+      },
+      {
+        "type": "DECEPTIVE PRACTICE",
+        "count": 408
+      }
+    ]
+  },
+  {
+    "id": 34,
+    "name": "Armour Square",
+    "district": 9,
+    "riskLevel": "Normal",
+    "incidentCount": 3158,
+    "latitude": 41.8407,
+    "longitude": -87.6339,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 811
+      },
+      {
+        "type": "BATTERY",
+        "count": 521
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 348
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Norwood Park",
+    "district": 16,
+    "riskLevel": "Normal",
+    "incidentCount": 3128,
+    "latitude": 41.9856,
+    "longitude": -87.8067,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 754
+      },
+      {
+        "type": "BATTERY",
+        "count": 456
+      },
+      {
+        "type": "DECEPTIVE PRACTICE",
+        "count": 425
+      }
+    ]
+  },
+  {
+    "id": 54,
+    "name": "Riverdale",
+    "district": 5,
+    "riskLevel": "Normal",
+    "incidentCount": 3084,
+    "latitude": 41.6506,
+    "longitude": -87.6033,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 842
+      },
+      {
+        "type": "ASSAULT",
+        "count": 468
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 428
+      }
+    ]
+  },
+  {
+    "id": 50,
+    "name": "Pullman",
+    "district": 5,
+    "riskLevel": "Normal",
+    "incidentCount": 3014,
+    "latitude": 41.6961,
+    "longitude": -87.6033,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 736
+      },
+      {
+        "type": "BATTERY",
+        "count": 519
+      },
+      {
+        "type": "ASSAULT",
+        "count": 354
+      }
+    ]
+  },
+  {
+    "id": 45,
+    "name": "Avalon Park",
+    "district": 4,
+    "riskLevel": "Normal",
+    "incidentCount": 2939,
+    "latitude": 41.7439,
+    "longitude": -87.5844,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 529
+      },
+      {
+        "type": "THEFT",
+        "count": 519
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 371
+      }
+    ]
+  },
+  {
+    "id": 57,
+    "name": "Archer Heights",
+    "district": 8,
+    "riskLevel": "Normal",
+    "incidentCount": 2888,
+    "latitude": 41.8089,
+    "longitude": -87.7289,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 955
+      },
+      {
+        "type": "BATTERY",
+        "count": 375
+      },
+      {
+        "type": "MOTOR VEHICLE THEFT",
+        "count": 249
+      }
+    ]
+  },
+  {
+    "id": 64,
+    "name": "Clearing",
+    "district": 8,
+    "riskLevel": "Normal",
+    "incidentCount": 2855,
+    "latitude": 41.7789,
+    "longitude": -87.7689,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 536
+      },
+      {
+        "type": "THEFT",
+        "count": 464
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 367
+      }
+    ]
+  },
+  {
+    "id": 59,
+    "name": "McKinley Park",
+    "district": 9,
+    "riskLevel": "Normal",
+    "incidentCount": 2665,
+    "latitude": 41.8319,
+    "longitude": -87.6733,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 800
+      },
+      {
+        "type": "BATTERY",
+        "count": 408
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 270
+      }
+    ]
+  },
+  {
+    "id": 62,
+    "name": "West Elsdon",
+    "district": 8,
+    "riskLevel": "Normal",
+    "incidentCount": 2603,
+    "latitude": 41.7933,
+    "longitude": -87.7133,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 472
+      },
+      {
+        "type": "THEFT",
+        "count": 423
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 330
+      }
+    ]
+  },
+  {
+    "id": 72,
+    "name": "Beverly",
+    "district": 22,
+    "riskLevel": "Normal",
+    "incidentCount": 2601,
+    "latitude": 41.7167,
+    "longitude": -87.6744,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 582
+      },
+      {
+        "type": "BATTERY",
+        "count": 399
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 328
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "name": "North Park",
+    "district": 17,
+    "riskLevel": "Normal",
+    "incidentCount": 2573,
+    "latitude": 41.9847,
+    "longitude": -87.7189,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 763
+      },
+      {
+        "type": "BATTERY",
+        "count": 452
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 233
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Jefferson Park",
+    "district": 16,
+    "riskLevel": "Normal",
+    "incidentCount": 2563,
+    "latitude": 41.9702,
+    "longitude": -87.7633,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 499
+      },
+      {
+        "type": "BATTERY",
+        "count": 459
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 287
+      }
+    ]
+  },
+  {
+    "id": 36,
+    "name": "Oakland",
+    "district": 2,
+    "riskLevel": "Normal",
+    "incidentCount": 2276,
+    "latitude": 41.8236,
+    "longitude": -87.6033,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 421
+      },
+      {
+        "type": "BATTERY",
+        "count": 390
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 336
+      }
+    ]
+  },
+  {
+    "id": 55,
+    "name": "Hegewisch",
+    "district": 4,
+    "riskLevel": "Normal",
+    "incidentCount": 2096,
+    "latitude": 41.6556,
+    "longitude": -87.5456,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 408
+      },
+      {
+        "type": "BATTERY",
+        "count": 333
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 321
+      }
+    ]
+  },
+  {
+    "id": 37,
+    "name": "Fuller Park",
+    "district": 9,
+    "riskLevel": "Normal",
+    "incidentCount": 1877,
+    "latitude": 41.8089,
+    "longitude": -87.6322,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 400
+      },
+      {
+        "type": "THEFT",
+        "count": 287
+      },
+      {
+        "type": "ASSAULT",
+        "count": 189
+      }
+    ]
+  },
+  {
+    "id": 18,
+    "name": "Montclare",
+    "district": 25,
+    "riskLevel": "Normal",
+    "incidentCount": 1739,
+    "latitude": 41.9294,
+    "longitude": -87.7981,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 412
+      },
+      {
+        "type": "BATTERY",
+        "count": 281
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 216
+      }
+    ]
+  },
+  {
+    "id": 74,
+    "name": "Mount Greenwood",
+    "district": 22,
+    "riskLevel": "Normal",
+    "incidentCount": 1424,
+    "latitude": 41.6933,
+    "longitude": -87.7089,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 310
+      },
+      {
+        "type": "BATTERY",
+        "count": 249
+      },
+      {
+        "type": "DECEPTIVE PRACTICE",
+        "count": 192
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "name": "Forest Glen",
+    "district": 16,
+    "riskLevel": "Normal",
+    "incidentCount": 1220,
+    "latitude": 41.9788,
+    "longitude": -87.7554,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 284
+      },
+      {
+        "type": "DECEPTIVE PRACTICE",
+        "count": 184
+      },
+      {
+        "type": "BATTERY",
+        "count": 152
+      }
+    ]
+  },
+  {
+    "id": 47,
+    "name": "Burnside",
+    "district": 5,
+    "riskLevel": "Normal",
+    "incidentCount": 745,
+    "latitude": 41.7289,
+    "longitude": -87.5956,
+    "topCrimes": [
+      {
+        "type": "BATTERY",
+        "count": 137
+      },
+      {
+        "type": "THEFT",
+        "count": 105
+      },
+      {
+        "type": "CRIMINAL DAMAGE",
+        "count": 100
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Edison Park",
+    "district": 16,
+    "riskLevel": "Normal",
+    "incidentCount": 687,
+    "latitude": 42.0054,
+    "longitude": -87.8134,
+    "topCrimes": [
+      {
+        "type": "THEFT",
+        "count": 137
+      },
+      {
+        "type": "DECEPTIVE PRACTICE",
+        "count": 131
+      },
+      {
+        "type": "BATTERY",
+        "count": 95
+      }
+    ]
+  }
+]

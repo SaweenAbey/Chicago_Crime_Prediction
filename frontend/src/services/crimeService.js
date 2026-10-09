@@ -36,8 +36,8 @@ export const crimeService = {
     return response.data;
   },
 
-  async getCrimeTrends() {
-    const response = await api.get('/api/stats/trends');
+  async getCrimeTrends(year = 'all') {
+    const response = await api.get('/api/stats/trends', { params: { year } });
     return response.data;
   },
 

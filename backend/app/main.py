@@ -150,33 +150,132 @@ def get_overview_stats():
         modelsActive=predictor.model_name
     )
 
+import json
+from typing import List, Optional
+
+MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+_TRENDS_CACHE = None
+
+def load_trends_data():
+    global _TRENDS_CACHE
+    if _TRENDS_CACHE is not None:
+        return _TRENDS_CACHE
+    
+    trends_file = Path(__file__).resolve().parent / "crime_trends_data.json"
+    if trends_file.exists():
+        try:
+            with open(trends_file, "r", encoding="utf-8") as f:
+                _TRENDS_CACHE = json.load(f)
+                return _TRENDS_CACHE
+        except Exception as e:
+            print(f"[WARN] Error loading crime_trends_data.json: {e}")
+    return {}
+
 @app.get("/api/stats/trends", response_model=List[TrendMonth])
-def get_crime_trends():
-    return [
-        TrendMonth(month="Jan", theft=4200, battery=3100, robbery=920, other=2100),
-        TrendMonth(month="Feb", theft=3900, battery=2900, robbery=850, other=1950),
-        TrendMonth(month="Mar", theft=4500, battery=3400, robbery=980, other=2250),
-        TrendMonth(month="Apr", theft=4800, battery=3800, robbery=1100, other=2400),
-        TrendMonth(month="May", theft=5300, battery=4200, robbery=1250, other=2700),
-        TrendMonth(month="Jun", theft=5900, battery=4800, robbery=1400, other=3100),
-        TrendMonth(month="Jul", theft=6300, battery=5100, robbery=1520, other=3300),
-        TrendMonth(month="Aug", theft=6100, battery=4950, robbery=1480, other=3150),
-    ]
+def get_crime_trends(year: Optional[str] = "all"):
+    trends_db = load_trends_data()
+    result = []
+    
+    # Determine which years to aggregate
+    if year and year.lower() != "all" and year in trends_db:
+        target_years = [year]
+    elif year and year.lower() != "all":
+        target_years = [y for y in ["2023", "2024", "2025", "2026"] if y in trends_db]
+    else:
+        target_years = list(trends_db.keys())
+
+    for m_idx in range(1, 13):
+        m_str = str(m_idx)
+        month_name = MONTH_NAMES[m_idx - 1]
+        
+        counts = {
+            "theft": 0, "battery": 0, "robbery": 0, "damage": 0, "assault": 0,
+            "vehicleTheft": 0, "deceptive": 0, "weapons": 0, "narcotics": 0,
+            "burglary": 0, "other": 0, "total": 0, "breakdown": {}
+        }
+        
+        for y in target_years:
+            y_data = trends_db.get(y, {}).get(m_str, {})
+            for cat, cnt in y_data.items():
+                cat_upper = cat.upper()
+                counts["breakdown"][cat] = counts["breakdown"].get(cat, 0) + cnt
+                counts["total"] += cnt
+                
+                if "THEFT" in cat_upper and "MOTOR" not in cat_upper:
+                    counts["theft"] += cnt
+                elif "BATTERY" in cat_upper:
+                    counts["battery"] += cnt
+                elif "ROBBERY" in cat_upper:
+                    counts["robbery"] += cnt
+                elif "DAMAGE" in cat_upper:
+                    counts["damage"] += cnt
+                elif "ASSAULT" in cat_upper:
+                    counts["assault"] += cnt
+                elif "MOTOR VEHICLE THEFT" in cat_upper:
+                    counts["vehicleTheft"] += cnt
+                elif "DECEPTIVE" in cat_upper:
+                    counts["deceptive"] += cnt
+                elif "WEAPONS" in cat_upper:
+                    counts["weapons"] += cnt
+                elif "NARCOTICS" in cat_upper:
+                    counts["narcotics"] += cnt
+                elif "BURGLARY" in cat_upper:
+                    counts["burglary"] += cnt
+                else:
+                    counts["other"] += cnt
+                    
+        result.append(TrendMonth(
+            month=month_name,
+            monthNum=m_idx,
+            theft=counts["theft"],
+            battery=counts["battery"],
+            robbery=counts["robbery"],
+            damage=counts["damage"],
+            assault=counts["assault"],
+            vehicleTheft=counts["vehicleTheft"],
+            deceptive=counts["deceptive"],
+            weapons=counts["weapons"],
+            narcotics=counts["narcotics"],
+            burglary=counts["burglary"],
+            other=counts["other"],
+            total=counts["total"],
+            breakdown=counts["breakdown"]
+        ))
+        
+    return result
+
+_HOTSPOTS_CACHE = None
+
+def load_hotspots_data():
+    global _HOTSPOTS_CACHE
+    if _HOTSPOTS_CACHE is not None:
+        return _HOTSPOTS_CACHE
+    
+    hotspots_file = Path(__file__).resolve().parent / "chicago_hotspots_data.json"
+    if hotspots_file.exists():
+        try:
+            with open(hotspots_file, "r", encoding="utf-8") as f:
+                raw_list = json.load(f)
+                _HOTSPOTS_CACHE = [HotspotArea(**item) for item in raw_list]
+                return _HOTSPOTS_CACHE
+        except Exception as e:
+            print(f"[WARN] Error loading chicago_hotspots_data.json: {e}")
+    return []
 
 @app.get("/api/stats/hotspots", response_model=List[HotspotArea])
 def get_hotspot_areas():
-    cache = get_or_load_data_stats()
-    if 'hotspots' in cache and cache['hotspots']:
-        return cache['hotspots']
+    hotspots = load_hotspots_data()
+    if hotspots:
+        return hotspots
     return [
-        HotspotArea(id=8, name="Near North Side", riskLevel="High", incidentCount=18450, latitude=41.8996, longitude=-87.6333),
-        HotspotArea(id=32, name="Loop (Downtown)", riskLevel="High", incidentCount=21200, latitude=41.8819, longitude=-87.6278),
-        HotspotArea(id=25, name="Austin", riskLevel="High", incidentCount=19800, latitude=41.8924, longitude=-87.7654),
-        HotspotArea(id=68, name="Englewood", riskLevel="High", incidentCount=14320, latitude=41.7753, longitude=-87.6416),
-        HotspotArea(id=24, name="West Town", riskLevel="Moderate", incidentCount=11500, latitude=41.9013, longitude=-87.6841),
-        HotspotArea(id=43, name="South Shore", riskLevel="Moderate", incidentCount=9800, latitude=41.7607, longitude=-87.5744),
-        HotspotArea(id=71, name="Auburn Gresham", riskLevel="Moderate", incidentCount=8900, latitude=41.7434, longitude=-87.6558),
-        HotspotArea(id=1, name="Rogers Park", riskLevel="Normal", incidentCount=5200, latitude=42.0094, longitude=-87.6698),
+        HotspotArea(id=8, name="Near North Side", riskLevel="High", incidentCount=29984, latitude=41.8996, longitude=-87.6333, district=18),
+        HotspotArea(id=32, name="Loop (Downtown)", riskLevel="High", incidentCount=23553, latitude=41.8819, longitude=-87.6278, district=1),
+        HotspotArea(id=25, name="Austin", riskLevel="High", incidentCount=33124, latitude=41.8924, longitude=-87.7654, district=15),
+        HotspotArea(id=68, name="Englewood", riskLevel="High", incidentCount=14320, latitude=41.7753, longitude=-87.6416, district=7),
+        HotspotArea(id=24, name="West Town", riskLevel="High", incidentCount=20048, latitude=41.9013, longitude=-87.6841, district=12),
+        HotspotArea(id=43, name="South Shore", riskLevel="High", incidentCount=22551, latitude=41.7607, longitude=-87.5744, district=3),
+        HotspotArea(id=71, name="Auburn Gresham", riskLevel="Moderate", incidentCount=16800, latitude=41.7434, longitude=-87.6558, district=6),
+        HotspotArea(id=1, name="Rogers Park", riskLevel="Normal", incidentCount=8200, latitude=42.0094, longitude=-87.6698, district=24),
     ]
 
 @app.get("/api/incidents/recent", response_model=List[RecentIncident])

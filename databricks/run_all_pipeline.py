@@ -61,14 +61,24 @@ def run_all_stages():
             print(f"  [ERROR] in {folder}: {e}")
             results.append({"stage": folder, "status": f"FAILED: {e}", "duration": 0})
 
-    # Trigger backend model artifact refresh
+    # Trigger backend model artifact refresh and bundle copy
     try:
+        import shutil
+        models_dest = base_dir.parent / "backend" / "models"
+        models_dest.mkdir(parents=True, exist_ok=True)
+        
+        # Check and copy final champion model bundle from stage 13 artifacts
+        bundle_source = base_dir / "artifacts" / "chicago_crime_member4" / "member4_v1" / "final" / "final_model_bundle.joblib"
+        if bundle_source.exists():
+            shutil.copy2(str(bundle_source), str(models_dest / "final_model_bundle.joblib"))
+            print("[OK] Champion model bundle (tuned XGBoost) synchronized to backend/models/final_model_bundle.joblib")
+
         backend_train_script = base_dir.parent / "backend" / "train_model.py"
         if backend_train_script.exists():
-            print("\n[REFRESH] Synchronizing final trained models with backend/models/...")
+            print("\n[REFRESH] Synchronizing trained models with backend/models/...")
             import subprocess
             subprocess.run([sys.executable, str(backend_train_script)], check=True)
-            print("✓ Backend model artifacts refreshed successfully.")
+            print("[OK] Backend model artifacts refreshed successfully.")
     except Exception as sync_err:
         print(f"Model sync note: {sync_err}")
 
