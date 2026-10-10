@@ -50,7 +50,7 @@ const Dashboard = () => {
       {modelInfo && !modelInfo.isFinalModel && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
           The backend is serving an interim model because final_model_bundle.joblib is not installed.
-          Predictions do not yet come from the selected tuned XGBoost model.
+          Predictions do not yet come from the final XGBoost model.
         </div>
       )}
 
@@ -63,11 +63,11 @@ const Dashboard = () => {
           description="Incidents in the cleaned dataset"
         />
         <MetricCard
-          title="Final Model Accuracy"
-          value={pct(test?.accuracy)}
+          title="Top-3 Accuracy (Final Model)"
+          value={pct(test?.top3_accuracy)}
           change={test ? `${test.num_classes} crime types` : undefined}
           icon={Target}
-          description="Held-out 2026 test split"
+          description={test ? `Held-out 2026 test split • top-1 ${pct(test.accuracy)}` : 'Held-out 2026 test split'}
         />
         <MetricCard
           title="Citywide Arrest Rate"
@@ -142,12 +142,13 @@ const Dashboard = () => {
             <>
               <div className="rounded-xl border border-blue-200 bg-blue-50/60 p-4 space-y-2">
                 <div className="flex justify-between text-xs font-bold text-slate-800">
-                  <span>Final model: {selection.model} ({selection.tag})</span>
+                  <span>Final model: {selection.model}</span>
                   <span className="text-blue-700">Test set</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
                   {[
-                    ['Accuracy', test.accuracy],
+                    ['Top-3 accuracy', test.top3_accuracy],
+                    ['Top-1 accuracy', test.accuracy],
                     ['Macro F1', test.macro_f1],
                     ['Weighted F1', test.weighted_f1],
                   ].map(([label, value]) => (
@@ -157,6 +158,10 @@ const Dashboard = () => {
                     </div>
                   ))}
                 </div>
+                <p className="text-[11px] text-slate-600">
+                  Top-3: the true crime type is among the 3 types the predictor ranks highest
+                  {test.majority_class_accuracy != null && ` (always guessing the most common type: ${pct(test.majority_class_accuracy)})`}.
+                </p>
                 <p className="text-[11px] text-slate-600">
                   Selected by validation macro F1 ({pct(selection.validation_macro_f1)}, +
                   {(selection.macro_f1_change * 100).toFixed(1)} pts over the untuned baseline).

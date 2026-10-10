@@ -16,7 +16,11 @@ import {
   Building2,
   Compass,
   Zap,
-  Activity
+  Activity,
+  Shield,
+  Landmark,
+  Hash,
+  Home
 } from 'lucide-react';
 import { crimeService, describeApiError } from '../../services/crimeService';
 
@@ -30,6 +34,17 @@ const validate = (data) => {
   if (!inRange(data.longitude, -87.95, -87.5)) errors.push('Longitude must be within Chicago (-87.95 to -87.5).');
   return errors;
 };
+
+// Every field gets the same two-line label (name + dataset column) so inputs in a row line up
+const FieldLabel = ({ icon: Icon, title, field }) => (
+  <div className="flex items-start gap-1.5 mb-1.5">
+    <Icon className="h-3.5 w-3.5 text-blue-600 mt-0.5 shrink-0" />
+    <div className="leading-tight">
+      <div className="text-xs font-bold text-slate-700">{title}</div>
+      <div className="text-[10px] font-mono text-slate-400">{field}</div>
+    </div>
+  </div>
+);
 
 const PredictionForm = () => {
   const initialArea = CHICAGO_COMMUNITY_AREAS[31]; // Loop (Downtown)
@@ -113,10 +128,7 @@ const PredictionForm = () => {
           {/* Row 1: Location Description & Community Area */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
-                <Building2 className="h-3.5 w-3.5 text-blue-600" />
-                Location Environment (location_description)
-              </label>
+              <FieldLabel icon={Building2} title="Location Environment" field="location_description" />
               <select
                 value={formData.locationDescription}
                 onChange={(e) => setFormData({ ...formData, locationDescription: e.target.value })}
@@ -131,10 +143,7 @@ const PredictionForm = () => {
             </div>
 
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
-                <MapPin className="h-3.5 w-3.5 text-blue-600" />
-                Community Area (community_area)
-              </label>
+              <FieldLabel icon={MapPin} title="Community Area" field="community_area" />
               <select
                 value={formData.communityArea}
                 onChange={(e) => handleCommunityAreaChange(e.target.value)}
@@ -152,9 +161,7 @@ const PredictionForm = () => {
           {/* Row 2: Police District, Ward & Beat */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Police District (district)
-              </label>
+              <FieldLabel icon={Shield} title="Police District" field="district" />
               <select
                 value={formData.district}
                 onChange={(e) => setFormData({ ...formData, district: parseInt(e.target.value) })}
@@ -169,9 +176,7 @@ const PredictionForm = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                City Ward (ward)
-              </label>
+              <FieldLabel icon={Landmark} title="City Ward" field="ward" />
               <input
                 type="number"
                 min="1"
@@ -183,9 +188,7 @@ const PredictionForm = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Police Beat (beat)
-              </label>
+              <FieldLabel icon={Hash} title="Police Beat" field="beat" />
               <input
                 type="number"
                 min="100"
@@ -200,10 +203,7 @@ const PredictionForm = () => {
           {/* Row 3: Day of Week, Month & Domestic Incident */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
-                <Calendar className="h-3.5 w-3.5 text-blue-600" />
-                Day of Week (day_of_week)
-              </label>
+              <FieldLabel icon={Calendar} title="Day of Week" field="day_of_week" />
               <select
                 value={formData.dayOfWeek}
                 onChange={(e) => setFormData({ ...formData, dayOfWeek: e.target.value })}
@@ -218,10 +218,7 @@ const PredictionForm = () => {
             </div>
 
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
-                <Calendar className="h-3.5 w-3.5 text-blue-600" />
-                Month (month)
-              </label>
+              <FieldLabel icon={Calendar} title="Month" field="month" />
               <select
                 value={formData.month}
                 onChange={(e) => setFormData({ ...formData, month: parseInt(e.target.value) })}
@@ -235,17 +232,16 @@ const PredictionForm = () => {
               </select>
             </div>
 
-            <div className="flex items-center pt-5">
-              <label className="flex items-center gap-3 cursor-pointer p-2.5 rounded-xl border border-slate-200 bg-slate-50 w-full hover:bg-slate-100 transition">
+            <div>
+              <FieldLabel icon={Home} title="Domestic Incident" field="domestic" />
+              <label className="flex items-center gap-3 cursor-pointer rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-sm hover:bg-slate-50 transition">
                 <input
                   type="checkbox"
                   checked={formData.domestic}
                   onChange={(e) => setFormData({ ...formData, domestic: e.target.checked })}
-                  className="h-4 w-4 rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500"
+                  className="h-5 w-5 rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-xs font-bold text-slate-800">
-                  Domestic Incident (domestic)
-                </span>
+                {formData.domestic ? 'Yes' : 'No'}
               </label>
             </div>
           </div>
@@ -281,10 +277,7 @@ const PredictionForm = () => {
           {/* Row 5: Coordinates (Latitude / Longitude) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1">
-                <Compass className="h-3 w-3 text-slate-400" />
-                Latitude
-              </label>
+              <FieldLabel icon={Compass} title="Latitude" field="latitude" />
               <input
                 type="number"
                 step="0.0001"
@@ -294,10 +287,7 @@ const PredictionForm = () => {
               />
             </div>
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mb-1">
-                <Compass className="h-3 w-3 text-slate-400" />
-                Longitude
-              </label>
+              <FieldLabel icon={Compass} title="Longitude" field="longitude" />
               <input
                 type="number"
                 step="0.0001"
@@ -391,6 +381,14 @@ const PredictionForm = () => {
                   </span>
                   <span>model probability for {prediction.area}</span>
                 </div>
+                {prediction.topProbabilities?.length >= 3 && (
+                  <div className="mt-1 flex items-center gap-2 text-xs text-slate-600">
+                    <span className="font-bold text-indigo-700 font-mono">
+                      {(prediction.topProbabilities.slice(0, 3).reduce((sum, p) => sum + p.probability, 0) * 100).toFixed(1)}%
+                    </span>
+                    <span>combined probability of the top 3 types</span>
+                  </div>
+                )}
                 {prediction.confidence < 0.4 && (
                   <p className="mt-2 text-[11px] text-slate-500">
                     No single crime type dominates for this context; consider the full distribution below.
