@@ -27,7 +27,6 @@ import {
   Moon,
   Sunset,
   Sunrise,
-  Radio,
   Sliders,
   ChevronDown,
   Info,
@@ -817,24 +816,7 @@ const PredictionForm = () => {
                 </div>
               )}
 
-              {/* Suggested Actions Card */}
-              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                    <Radio className="h-3.5 w-3.5 text-blue-600" />
-                    Actionable Tactical Directives
-                  </span>
-                  <span className="text-[10px] text-slate-400 font-medium">Rule-based Advisory</span>
-                </div>
-                <ul className="mt-2 space-y-2 text-xs text-slate-700">
-                  {prediction.recommendations.map((rec, i) => (
-                    <li key={i} className="flex items-start gap-2.5 bg-white p-2.5 rounded-lg border border-slate-200/70 shadow-2xs">
-                      <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                      <span className="leading-snug">{rec}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {/* Rule-based advisory section hidden for the viva presentation. */}
 
               {/* Utility Footer (Copy Summary / Share) */}
               <div className="pt-2 flex items-center justify-between border-t border-slate-100">

@@ -2,7 +2,8 @@ import React from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
-import Dashboard from './pages/Dashboard';
+// Overview Dashboard is hidden for the viva presentation.
+// import Dashboard from './pages/Dashboard';
 import CrimePredictor from './pages/CrimePredictor';
 import TrendsView from './pages/TrendsView';
 // City Hotspots is hidden for the viva presentation; its page code is retained.
@@ -13,11 +14,9 @@ const MainContent = () => {
 
   return (
     <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl w-full mx-auto bg-slate-50">
-      {currentTab === 'dashboard' && <Dashboard />}
-      {currentTab === 'predict' && <CrimePredictor />}
+      {/* Dashboard and City Hotspots are disabled; retained page files can be restored later. */}
+      {currentTab !== 'trends' && <CrimePredictor />}
       {currentTab === 'trends' && <TrendsView />}
-      {/* City Hotspots disabled for the viva presentation. */}
-      {currentTab === 'map' && <Dashboard />}
     </main>
   );
 };
