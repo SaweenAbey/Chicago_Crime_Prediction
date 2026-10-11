@@ -27,6 +27,7 @@ env/
 
 # Backend env
 backend/.env
+backend/server.*.log
 
 # Frontend & Node
 node_modules/

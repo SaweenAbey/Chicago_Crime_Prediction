@@ -5,7 +5,8 @@ import Sidebar from './components/layout/Sidebar';
 import Dashboard from './pages/Dashboard';
 import CrimePredictor from './pages/CrimePredictor';
 import TrendsView from './pages/TrendsView';
-import MapView from './pages/MapView';
+// City Hotspots is hidden for the viva presentation; its page code is retained.
+// import MapView from './pages/MapView';
 
 const MainContent = () => {
   const { currentTab } = useApp();
@@ -15,7 +16,8 @@ const MainContent = () => {
       {currentTab === 'dashboard' && <Dashboard />}
       {currentTab === 'predict' && <CrimePredictor />}
       {currentTab === 'trends' && <TrendsView />}
-      {currentTab === 'map' && <MapView />}
+      {/* City Hotspots disabled for the viva presentation. */}
+      {currentTab === 'map' && <Dashboard />}
     </main>
   );
 };

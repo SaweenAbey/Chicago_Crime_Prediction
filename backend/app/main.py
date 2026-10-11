@@ -60,15 +60,20 @@ def get_or_load_data_stats():
                 id=int(area_id), name=info["name"], riskLevel="High" if cnt >= high_threshold else "Moderate",
                 incidentCount=int(cnt), latitude=float(info["lat"]), longitude=float(info["lon"])))
 
-        # Monthly counts for the last complete calendar year in the data
-        full_year = int(df['date'].dt.year.max()) - 1
-        year_df = df[df['date'].dt.year == full_year]
+        # Include requested years, distinguishing unavailable months from zero counts.
+        date_counts = df.groupby([df['date'].dt.year, df['date'].dt.month])
         trends = []
-        for month in range(1, 13):
-            m = year_df[year_df['date'].dt.month == month]['primary_type']
-            theft, battery, robbery = (int((m == t).sum()) for t in ('THEFT', 'BATTERY', 'ROBBERY'))
-            trends.append(TrendMonth(month=f"{calendar.month_abbr[month]} {full_year}", theft=theft,
-                                     battery=battery, robbery=robbery, other=int(len(m)) - theft - battery - robbery))
+        for year in range(2023, 2027):
+            year_dates = df.loc[df['date'].dt.year == year, 'date']
+            coverage_end = year_dates.max().strftime('%Y-%m-%d') if len(year_dates) else None
+            for month in range(1, 13):
+                available = (year, month) in date_counts.groups
+                m = date_counts.get_group((year, month))['primary_type'] if available else pd.Series(dtype=str)
+                theft, battery, robbery = (int((m == t).sum()) for t in ('THEFT', 'BATTERY', 'ROBBERY'))
+                trends.append(TrendMonth(month=f"{calendar.month_abbr[month]} {year}", year=year,
+                                         monthNumber=month, available=available, coverageEnd=coverage_end,
+                                         theft=theft, battery=battery, robbery=robbery,
+                                         other=int(len(m)) - theft - battery - robbery))
 
         recent_list = []
         for _, row in df.sort_values('date', ascending=False).head(8).iterrows():

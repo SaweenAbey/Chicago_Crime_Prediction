@@ -76,6 +76,10 @@ class HotspotArea(BaseModel):
 
 class TrendMonth(BaseModel):
     month: str
+    year: int
+    monthNumber: int
+    available: bool
+    coverageEnd: Optional[str] = None
     theft: int
     battery: int
     robbery: int
