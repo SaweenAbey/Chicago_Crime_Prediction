@@ -1,6 +1,5 @@
 {
-  "source": "Saved outputs of databricks notebooks 11 (comparison), 12 (tuning/selection) and 13 (final test), experiment member4_v1",
-  "experiment_id": "5b20064dafa548e2ab7809ef491df867",
+  "source": "backend/train_final_model.py, same features and settings as databricks/14_Improved_Model (baselines from notebook 11)",
   "target": "primary_type",
   "split": {
     "strategy": "chronological",
@@ -10,26 +9,50 @@
   },
   "selection": {
     "model": "XGBoost",
-    "tag": "tuned_04",
+    "tag": "final",
     "rule": "Converged candidates: highest validation macro F1, then weighted F1, then shorter training time.",
-    "validation_macro_f1": 0.1254,
-    "validation_weighted_f1": 0.3086,
+    "validation_macro_f1": 0.159,
+    "validation_weighted_f1": 0.349,
+    "validation_top3_accuracy": 0.7015,
     "baseline_macro_f1": 0.1164,
-    "macro_f1_change": 0.0091,
+    "macro_f1_change": 0.0426,
+    "best_iteration": 234,
     "test_used_for_selection": false
   },
   "test": {
-    "accuracy": 0.3635,
-    "macro_precision": 0.2329,
-    "macro_recall": 0.1191,
-    "macro_f1": 0.1202,
-    "weighted_f1": 0.2952,
-    "num_classes": 31
+    "accuracy": 0.3844,
+    "macro_precision": 0.2343,
+    "macro_recall": 0.1471,
+    "macro_f1": 0.153,
+    "weighted_f1": 0.3365,
+    "top3_accuracy": 0.6816,
+    "num_classes": 31,
+    "majority_class_accuracy": 0.2159
   },
   "baseline_validation": [
-    {"model": "Logistic Regression", "accuracy": 0.3650, "macro_f1": 0.1169, "weighted_f1": 0.2983},
-    {"model": "XGBoost", "accuracy": 0.3714, "macro_f1": 0.1164, "weighted_f1": 0.2990},
-    {"model": "Decision Tree", "accuracy": 0.3429, "macro_f1": 0.0993, "weighted_f1": 0.2826},
-    {"model": "Random Forest", "accuracy": 0.3490, "macro_f1": 0.0707, "weighted_f1": 0.2488}
+    {
+      "model": "Logistic Regression",
+      "accuracy": 0.365,
+      "macro_f1": 0.1169,
+      "weighted_f1": 0.2983
+    },
+    {
+      "model": "XGBoost",
+      "accuracy": 0.3714,
+      "macro_f1": 0.1164,
+      "weighted_f1": 0.299
+    },
+    {
+      "model": "Decision Tree",
+      "accuracy": 0.3429,
+      "macro_f1": 0.0993,
+      "weighted_f1": 0.2826
+    },
+    {
+      "model": "Random Forest",
+      "accuracy": 0.349,
+      "macro_f1": 0.0707,
+      "weighted_f1": 0.2488
+    }
   ]
 }

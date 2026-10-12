@@ -1,578 +1,120 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import {
-  Calendar,
-  BarChart3,
-  Filter,
-  TrendingUp,
-  TrendingDown,
-  Layers,
-  Sparkles,
-  ShieldAlert,
-  Flame,
-  CheckCircle2,
-  ChevronDown,
-  Info
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Calendar, BarChart3 } from 'lucide-react';
 import { crimeService, describeApiError } from '../services/crimeService';
 
-const AVAILABLE_YEARS = [
-  { id: 'all', label: '2023 - 2026 (All)' },
-  { id: '2026', label: '2026' },
-  { id: '2025', label: '2025' },
-  { id: '2024', label: '2024' },
-  { id: '2023', label: '2023' }
-];
-
-const CRIME_CATEGORIES = [
-  { id: 'theft', label: 'Theft', color: 'bg-blue-500', hoverColor: 'hover:bg-blue-600', hex: '#3b82f6', border: 'border-blue-400' },
-  { id: 'battery', label: 'Battery', color: 'bg-indigo-500', hoverColor: 'hover:bg-indigo-600', hex: '#6366f1', border: 'border-indigo-400' },
-  { id: 'damage', label: 'Criminal Damage', color: 'bg-amber-500', hoverColor: 'hover:bg-amber-600', hex: '#f59e0b', border: 'border-amber-400' },
-  { id: 'assault', label: 'Assault', color: 'bg-rose-500', hoverColor: 'hover:bg-rose-600', hex: '#f43f5e', border: 'border-rose-400' },
-  { id: 'vehicleTheft', label: 'Motor Vehicle Theft', color: 'bg-cyan-500', hoverColor: 'hover:bg-cyan-600', hex: '#06b6d4', border: 'border-cyan-400' },
-  { id: 'robbery', label: 'Robbery', color: 'bg-purple-500', hoverColor: 'hover:bg-purple-600', hex: '#a855f7', border: 'border-purple-400' },
-  { id: 'deceptive', label: 'Deceptive Practice', color: 'bg-emerald-500', hoverColor: 'hover:bg-emerald-600', hex: '#10b981', border: 'border-emerald-400' },
-  { id: 'weapons', label: 'Weapons Violation', color: 'bg-red-600', hoverColor: 'hover:bg-red-700', hex: '#dc2626', border: 'border-red-500' }
-];
+const YEARS = [2024, 2025, 2026];
+const COLORS = { 2024: '#3b82f6', 2025: '#6366f1', 2026: '#14b8a6' };
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const format = (n) => n.toLocaleString();
+const count = (row, category) => category === 'total' ? row.theft + row.battery + row.robbery + row.other : row[category];
 
 const TrendsView = () => {
-  const [selectedYear, setSelectedYear] = useState('all');
-  const [selectedCategories, setSelectedCategories] = useState(['theft', 'battery', 'damage', 'robbery']);
-  const [chartMode, setChartMode] = useState('grouped'); // 'grouped' | 'stacked' | 'total'
-  const [trendsData, setTrendsData] = useState([]);
-  const [hoveredMonth, setHoveredMonth] = useState(null);
-  const [showCategoryFilter, setShowCategoryFilter] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState([]);
   const [error, setError] = useState(null);
-
+  const [hoveredMonth, setHoveredMonth] = useState(null);
+  const [category, setCategory] = useState('total');
+  const [selectedYears, setSelectedYears] = useState(YEARS);
+  const [startMonth, setStartMonth] = useState(1);
+  const [endMonth, setEndMonth] = useState(12);
+  const visibleMonths = MONTHS.map((label, index) => ({ label, number: index + 1 })).filter((m) => m.number >= startMonth && m.number <= endMonth);
+  const filteredData = data.filter((r) => selectedYears.includes(r.year) && r.monthNumber >= startMonth && r.monthNumber <= endMonth);
+  const coverageEnd = data.find((r) => r.year === 2026)?.coverageEnd;
+  const resetFilters = () => { setSelectedYears(YEARS); setStartMonth(1); setEndMonth(12); setCategory('total'); };
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-    crimeService
-      .getCrimeTrends(selectedYear)
-      .then((data) => {
-        setTrendsData(data || []);
-      })
-      .catch((err) => setError(describeApiError(err)))
-      .finally(() => setLoading(false));
-  }, [selectedYear]);
-
-  const toggleCategory = (catId) => {
-    setSelectedCategories((prev) => {
-      if (prev.includes(catId)) {
-        if (prev.length === 1) return prev; // Keep at least one
-        return prev.filter((id) => id !== catId);
-      }
-      return [...prev, catId];
+    crimeService.getCrimeTrends().then(setData).catch((err) => setError(describeApiError(err)));
+  }, []);
+  const yearly = selectedYears.map((year) => {
+    const rows = filteredData.filter((r) => r.year === year && r.available);
+    return { year, available: rows.length > 0, total: rows.reduce((sum, r) => sum + count(r, category), 0), end: rows[0]?.coverageEnd };
+  });
+  const maxYear = Math.max(1, ...yearly.map((r) => r.total));
+  const chartData = visibleMonths.map(({ label, number }) => {
+    const entry = { month: label };
+    selectedYears.forEach((year) => {
+      const row = filteredData.find((r) => r.year === year && r.monthNumber === number);
+      entry[year] = row?.available ? count(row, category) : null;
     });
-  };
-
-  const selectTopPreset = (count) => {
-    setSelectedCategories(CRIME_CATEGORIES.slice(0, count).map((c) => c.id));
-  };
-
-  const selectAllCategories = () => {
-    setSelectedCategories(CRIME_CATEGORIES.map((c) => c.id));
-  };
-
-  // Aggregated KPI Computations
-  const stats = useMemo(() => {
-    if (!trendsData.length) return null;
-
-    let totalSelectedCrimes = 0;
-    let totalAllCrimes = 0;
-    let peakMonth = trendsData[0];
-    let peakVal = 0;
-
-    const categorySums = {};
-    CRIME_CATEGORIES.forEach((c) => (categorySums[c.id] = 0));
-
-    trendsData.forEach((m) => {
-      totalAllCrimes += m.total || 0;
-      let monthSelectedSum = 0;
-      selectedCategories.forEach((catId) => {
-        const val = m[catId] || 0;
-        categorySums[catId] = (categorySums[catId] || 0) + val;
-        monthSelectedSum += val;
-      });
-      totalSelectedCrimes += monthSelectedSum;
-
-      if (monthSelectedSum > peakVal) {
-        peakVal = monthSelectedSum;
-        peakMonth = m;
-      }
-    });
-
-    // Top Category
-    let topCatId = selectedCategories[0];
-    let topCatCount = 0;
-    selectedCategories.forEach((catId) => {
-      if (categorySums[catId] > topCatCount) {
-        topCatCount = categorySums[catId];
-        topCatId = catId;
-      }
-    });
-
-    const topCatObj = CRIME_CATEGORIES.find((c) => c.id === topCatId);
-
-    // Summer vs Winter seasonality (Jun-Aug vs Dec-Feb)
-    const summerMonths = trendsData.filter((m) => ['Jun', 'Jul', 'Aug'].includes(m.month));
-    const winterMonths = trendsData.filter((m) => ['Dec', 'Jan', 'Feb'].includes(m.month));
-    const summerSum = summerMonths.reduce((acc, m) => acc + (m.total || 0), 0);
-    const winterSum = winterMonths.reduce((acc, m) => acc + (m.total || 0), 0);
-    const summerShift = winterSum > 0 ? (((summerSum - winterSum) / winterSum) * 100).toFixed(1) : '+14.8';
-
-    return {
-      totalSelectedCrimes,
-      totalAllCrimes,
-      peakMonthName: peakMonth?.month || 'July',
-      peakMonthCount: peakVal,
-      topCategoryName: topCatObj?.label || 'Theft',
-      topCategoryCount: topCatCount,
-      topCategoryPct: totalSelectedCrimes > 0 ? ((topCatCount / totalSelectedCrimes) * 100).toFixed(1) : '0',
-      summerShift
-    };
-  }, [trendsData, selectedCategories]);
-
-  // Dynamic maximum scale for bar chart height normalization
-  const maxBarValue = useMemo(() => {
-    if (!trendsData.length) return 1000;
-    if (chartMode === 'total') {
-      return Math.max(...trendsData.map((d) => d.total || 0), 100);
-    }
-    if (chartMode === 'stacked') {
-      return Math.max(
-        ...trendsData.map((d) =>
-          selectedCategories.reduce((acc, catId) => acc + (d[catId] || 0), 0)
-        ),
-        100
-      );
-    }
-    // grouped: max of any individual category
-    let max = 100;
-    trendsData.forEach((d) => {
-      selectedCategories.forEach((catId) => {
-        if ((d[catId] || 0) > max) max = d[catId];
-      });
-    });
-    return max;
-  }, [trendsData, selectedCategories, chartMode]);
-
+    return entry;
+  });
+  const hasChartData = chartData.some((row) => selectedYears.some((year) => row[year] !== null));
+  const axisMax = Math.ceil(Math.max(1, ...chartData.flatMap((row) => selectedYears.map((year) => row[year] || 0))) / 1000) * 1000;
+  const groupWidth = 1020 / chartData.length;
+  const barWidth = Math.min(44, groupWidth * 0.7 / selectedYears.length);
+  const hoveredRow = chartData.find((row) => row.month === hoveredMonth);
   return (
     <div className="space-y-6">
-      {/* Header & Controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
-              <Sparkles className="h-3.5 w-3.5" />
-              Historical Dataset Analytics
-            </span>
-          </div>
-          <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">
-            Historical Crime Analytics & Trend Explorer
-          </h2>
-          <p className="text-sm text-slate-500 font-medium">
-            Actual Chicago Open Data incident volume, longitudinal crime patterns, and seasonal breakdown (2023–2026).
-          </p>
-        </div>
-
-        {/* Filter Controls Bar */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          {/* Year Filter Buttons */}
-          <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200 shadow-inner">
-            {AVAILABLE_YEARS.map((y) => (
-              <button
-                key={y.id}
-                onClick={() => setSelectedYear(y.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  selectedYear === y.id
-                    ? 'bg-white text-blue-700 shadow-sm border border-slate-200/80 scale-[1.02]'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-                }`}
-              >
-                {y.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Crime Types Filter Dropdown Toggle */}
-          <button
-            onClick={() => setShowCategoryFilter(!showCategoryFilter)}
-            className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold shadow-sm transition ${
-              showCategoryFilter
-                ? 'border-blue-300 bg-blue-50 text-blue-700'
-                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-            }`}
-          >
-            <Filter className="h-4 w-4 text-blue-600" />
-            <span>Filter Categories ({selectedCategories.length})</span>
-            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showCategoryFilter ? 'rotate-180' : ''}`} />
-          </button>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div><h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Historical Crime Trends</h2>
+          <p className="mt-1 text-sm text-slate-500">Compare recorded incidents across years and months.</p></div>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold"><Calendar className="h-4 w-4 text-blue-600" />2024–2026</span>
+          <label className="text-sm text-slate-600">Crime type
+            <select value={category} onChange={(e) => setCategory(e.target.value)} className="ml-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-800">
+              <option value="total">All crimes</option><option value="theft">Theft</option><option value="battery">Battery</option><option value="robbery">Robbery</option><option value="other">Other crimes</option>
+            </select>
+          </label>
         </div>
       </div>
-
-      {error && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 shadow-sm flex items-center gap-2">
-          <ShieldAlert className="h-4 w-4 shrink-0" />
-          <span>{error}</span>
+      <div className="flex flex-wrap items-end gap-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <fieldset><legend className="mb-2 text-xs font-semibold text-slate-500">Compare years</legend><div className="flex gap-2">
+          {YEARS.map((year) => <label key={year} className="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm font-semibold"><input type="checkbox" checked={selectedYears.includes(year)} disabled={selectedYears.length === 1 && selectedYears.includes(year)} onChange={() => setSelectedYears((current) => current.includes(year) ? current.filter((y) => y !== year) : YEARS.filter((y) => y === year || current.includes(y)))} />{year}</label>)}
+        </div></fieldset>
+        <label className="text-sm text-slate-600">From month<select className="ml-2 rounded-lg border border-slate-200 px-3 py-2" value={startMonth} onChange={(e) => { const month = Number(e.target.value); setStartMonth(month); if (month > endMonth) setEndMonth(month); }}>{MONTHS.map((month, index) => <option key={month} value={index + 1}>{month}</option>)}</select></label>
+        <label className="text-sm text-slate-600">To month<select className="ml-2 rounded-lg border border-slate-200 px-3 py-2" value={endMonth} onChange={(e) => { const month = Number(e.target.value); setEndMonth(month); if (month < startMonth) setStartMonth(month); }}>{MONTHS.map((month, index) => <option key={month} value={index + 1}>{month}</option>)}</select></label>
+        <button onClick={resetFilters} className="rounded-lg px-3 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50">Reset filters</button>
+        <p className="w-full text-xs text-slate-500">Filters apply to the totals and graph. Select Jan to Aug to compare complete months across all three years.</p>
+      </div>
+      {error && <div role="alert" className="rounded-xl bg-rose-50 p-4 text-rose-700">{error}</div>}
+      {!error && !data.length && <p role="status" className="text-slate-500">Loading historical records…</p>}
+      {!!data.length && <>
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          2026 includes records through {coverageEnd || 'the latest available date'}; September is partial and later months are unavailable. A smaller 2026 total does not necessarily mean crime decreased.
         </div>
-      )}
-
-      {/* Category Multi-Select Panel (Expandable) */}
-      {showCategoryFilter && (
-        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-100">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Select Primary Crime Types to Compare
-            </span>
-            <div className="flex items-center gap-2 text-xs font-semibold">
-              <button
-                onClick={() => selectTopPreset(3)}
-                className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
-              >
-                Top 3
-              </button>
-              <button
-                onClick={() => selectTopPreset(5)}
-                className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
-              >
-                Top 5
-              </button>
-              <button
-                onClick={selectAllCategories}
-                className="px-2.5 py-1 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 transition"
-              >
-                Select All
-              </button>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2 pt-1">
-            {CRIME_CATEGORIES.map((cat) => {
-              const isSelected = selectedCategories.includes(cat.id);
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => toggleCategory(cat.id)}
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
-                    isSelected
-                      ? `${cat.border} bg-slate-900 text-white shadow-sm scale-100`
-                      : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50 opacity-60'
-                  }`}
-                >
-                  <span className={`h-2.5 w-2.5 rounded-full ${cat.color}`}></span>
-                  <span>{cat.label}</span>
-                  {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-blue-400 ml-0.5" />}
-                </button>
-              );
-            })}
-          </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {yearly.map((row) => <div key={row.year} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between"><span className="text-lg font-bold">{row.year}</span><span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">{!row.available ? 'No data' : row.year === 2026 && endMonth >= 9 ? 'Partial coverage' : startMonth === 1 && endMonth === 12 ? 'Full year' : 'Selected months'}</span></div>
+            <p className="mt-4 text-3xl font-extrabold tracking-tight" style={{ color: COLORS[row.year] }}>{row.available ? format(row.total) : '—'}</p>
+            <p className="mt-1 text-xs text-slate-500">{row.available ? `Incidents: ${MONTHS[startMonth - 1]} to ${MONTHS[endMonth - 1]}` : 'Records unavailable'}</p>
+            <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full" style={{ width: `${row.total / maxYear * 100}%`, background: COLORS[row.year] }} /></div>
+          </div>)}
         </div>
-      )}
-
-      {/* KPI Cards Row */}
-      {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Filtered Volume ({selectedYear === 'all' ? '2023-2026' : selectedYear})
-              </span>
-              <div className="h-9 w-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
-                <BarChart3 className="h-5 w-5" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <div className="text-2xl font-black text-slate-900">
-                {stats.totalSelectedCrimes.toLocaleString()}
-              </div>
-              <p className="text-xs font-medium text-slate-500 mt-0.5">
-                Incidents across {selectedCategories.length} selected types
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Peak Month</span>
-              <div className="h-9 w-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">
-                <Flame className="h-5 w-5" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <div className="text-2xl font-black text-slate-900">{stats.peakMonthName}</div>
-              <p className="text-xs font-medium text-slate-500 mt-0.5">
-                Highest activity ({stats.peakMonthCount.toLocaleString()} incidents)
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Top Crime Category</span>
-              <div className="h-9 w-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
-                <ShieldAlert className="h-5 w-5" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <div className="text-2xl font-black text-slate-900">{stats.topCategoryName}</div>
-              <p className="text-xs font-medium text-slate-500 mt-0.5">
-                {stats.topCategoryCount.toLocaleString()} records ({stats.topCategoryPct}% of selection)
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Summer Surge Factor</span>
-              <div className="h-9 w-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
-                <TrendingUp className="h-5 w-5" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <div className="text-2xl font-black text-slate-900">+{stats.summerShift}%</div>
-              <p className="text-xs font-medium text-slate-500 mt-0.5">
-                Seasonal spike in warmer months (Jun–Aug)
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Interactive Bar Graph Card */}
-      <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-          <div>
-            <h3 className="font-extrabold text-slate-900 text-lg flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-blue-600" />
-              <span>Monthly Incident Distribution by Category</span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                {selectedYear === 'all' ? 'All Years (2023-2026)' : `Year ${selectedYear}`}
-              </span>
-            </h3>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Hover over monthly bars to inspect detailed category breakdown and exact counts.
-            </p>
-          </div>
-
-          {/* Visualization Mode Switch */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200">
-            <button
-              onClick={() => setChartMode('grouped')}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition ${
-                chartMode === 'grouped' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Grouped
-            </button>
-            <button
-              onClick={() => setChartMode('stacked')}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition ${
-                chartMode === 'stacked' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Stacked
-            </button>
-            <button
-              onClick={() => setChartMode('total')}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition ${
-                chartMode === 'total' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Total Volume
-            </button>
-          </div>
-        </div>
-
-        {/* Bar Graph Canvas */}
-        <div className="relative pt-6 pb-2">
-          {/* Subtle Gridlines Background */}
-          <div className="absolute inset-x-0 top-6 bottom-10 flex flex-col justify-between pointer-events-none opacity-40">
-            <div className="border-b border-dashed border-slate-200 w-full"></div>
-            <div className="border-b border-dashed border-slate-200 w-full"></div>
-            <div className="border-b border-dashed border-slate-200 w-full"></div>
-            <div className="border-b border-dashed border-slate-200 w-full"></div>
-          </div>
-
-          {/* 12 Months Graph Grid */}
-          <div className="grid grid-cols-12 gap-1.5 sm:gap-3 items-end h-72 sm:h-80 border-b border-slate-200 pb-3 relative z-10">
-            {trendsData.map((item) => {
-              const isHovered = hoveredMonth === item.month;
-              const monthSum = selectedCategories.reduce((acc, catId) => acc + (item[catId] || 0), 0);
-
-              return (
-                <div
-                  key={item.month}
-                  onMouseEnter={() => setHoveredMonth(item.month)}
-                  onMouseLeave={() => setHoveredMonth(null)}
-                  className="flex flex-col items-center justify-end h-full group relative cursor-pointer"
-                >
-                  {/* Floating Tooltip */}
-                  {isHovered && (
-                    <div className="absolute -top-32 left-1/2 -translate-x-1/2 z-30 bg-slate-900/95 text-white p-3 rounded-xl shadow-xl border border-slate-700 text-xs w-48 backdrop-blur-sm pointer-events-none animate-in fade-in zoom-in-95 duration-150">
-                      <div className="font-bold border-b border-slate-700 pb-1.5 mb-1.5 flex items-center justify-between">
-                        <span>{item.month} {selectedYear !== 'all' ? selectedYear : 'Total'}</span>
-                        <span className="text-blue-400 font-mono">{(item.total || monthSum).toLocaleString()}</span>
-                      </div>
-                      <div className="space-y-1 max-h-24 overflow-y-auto">
-                        {selectedCategories.map((catId) => {
-                          const catObj = CRIME_CATEGORIES.find((c) => c.id === catId);
-                          const val = item[catId] || 0;
-                          return (
-                            <div key={catId} className="flex items-center justify-between text-[11px]">
-                              <span className="flex items-center gap-1.5 text-slate-300">
-                                <span className={`h-2 w-2 rounded-full ${catObj?.color}`}></span>
-                                {catObj?.label}
-                              </span>
-                              <span className="font-semibold text-slate-100 font-mono">{val.toLocaleString()}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Mode: Grouped Bars */}
-                  {chartMode === 'grouped' && (
-                    <div className="w-full flex items-end justify-center gap-0.5 sm:gap-1 h-60 sm:h-68">
-                      {selectedCategories.map((catId) => {
-                        const catObj = CRIME_CATEGORIES.find((c) => c.id === catId);
-                        const val = item[catId] || 0;
-                        const heightPct = Math.min(100, Math.max(4, (val / maxBarValue) * 100));
-
-                        return (
-                          <div
-                            key={catId}
-                            style={{ height: `${heightPct}%` }}
-                            className={`w-full ${catObj?.color} ${catObj?.hoverColor} rounded-t-sm sm:rounded-t-md transition-all duration-300 shadow-sm ${
-                              isHovered ? 'brightness-110 scale-y-105' : 'opacity-90'
-                            }`}
-                            title={`${catObj?.label}: ${val.toLocaleString()}`}
-                          ></div>
-                        );
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h3 className="flex items-center gap-2 text-lg font-bold"><BarChart3 className="h-5 w-5 text-blue-600" />Monthly comparison</h3>
+          <p className="mt-1 text-sm text-slate-500">Each group compares the same month across years. Hover over a bar for its count.</p>
+          <div className="mt-5 flex flex-wrap gap-5 text-sm">{selectedYears.map((year) => <span key={year} className="flex items-center gap-2"><span className="h-3 w-3 rounded" style={{ background: COLORS[year] }} />{year}{year === 2026 && endMonth >= 9 ? ' · partial' : ''}</span>)}</div>
+          <div className="mt-7 rounded-xl bg-slate-50/60 px-1 py-5 sm:px-3">
+            {hasChartData ? <div className="h-80 w-full sm:h-96" role="img" aria-label="Monthly recorded incidents compared by selected year and crime type">
+              <div className="relative h-full w-full" onMouseLeave={() => setHoveredMonth(null)}>
+                <svg viewBox="0 0 1120 360" className="h-full w-full" preserveAspectRatio="none" aria-label="Monthly comparison bar chart">
+                  {[0, 1, 2, 3, 4].map((tick) => {
+                    const y = 20 + tick * 72;
+                    return <g key={tick}><line x1="70" x2="1090" y1={y} y2={y} stroke="#e2e8f0" strokeDasharray="3 5" /><text x="58" y={y + 4} textAnchor="end" fill="#94a3b8" fontSize="12">{format(axisMax * (1 - tick / 4))}</text></g>;
+                  })}
+                  {chartData.map((row, index) => {
+                    const center = 70 + groupWidth * (index + 0.5);
+                    return <g key={row.month} onMouseEnter={() => setHoveredMonth(row.month)}>
+                      <rect x={70 + index * groupWidth} y="15" width={groupWidth} height="300" fill={hoveredMonth === row.month ? '#e2e8f0' : 'transparent'} opacity="0.35" rx="8" />
+                      {selectedYears.map((year, yearIndex) => {
+                        if (row[year] === null) return null;
+                        const height = row[year] / axisMax * 288;
+                        return <rect key={year} x={center - selectedYears.length * barWidth / 2 + yearIndex * barWidth + 2} y={308 - height} width={Math.max(1, barWidth - 4)} height={height} rx="5" fill={COLORS[year]} tabIndex={0} onFocus={() => setHoveredMonth(row.month)} onBlur={() => setHoveredMonth(null)}><title>{row.month} {year}: {format(row[year])} incidents</title></rect>;
                       })}
-                    </div>
-                  )}
-
-                  {/* Mode: Stacked Bars */}
-                  {chartMode === 'stacked' && (
-                    <div className="w-full sm:w-4/5 flex flex-col-reverse items-center justify-start h-60 sm:h-68 rounded-t-md overflow-hidden bg-slate-100 shadow-inner">
-                      {selectedCategories.map((catId) => {
-                        const catObj = CRIME_CATEGORIES.find((c) => c.id === catId);
-                        const val = item[catId] || 0;
-                        const heightPct = Math.min(100, (val / maxBarValue) * 100);
-
-                        return (
-                          <div
-                            key={catId}
-                            style={{ height: `${heightPct}%` }}
-                            className={`w-full ${catObj?.color} ${catObj?.hoverColor} transition-all duration-300 ${
-                              isHovered ? 'brightness-110' : 'opacity-95'
-                            }`}
-                            title={`${catObj?.label}: ${val.toLocaleString()}`}
-                          ></div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* Mode: Total Volume Bar */}
-                  {chartMode === 'total' && (
-                    <div className="w-full sm:w-3/4 flex items-end justify-center h-60 sm:h-68">
-                      <div
-                        style={{ height: `${Math.min(100, Math.max(4, ((item.total || 0) / maxBarValue) * 100))}%` }}
-                        className={`w-full bg-gradient-to-t from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 rounded-t-md transition-all duration-300 shadow-md ${
-                          isHovered ? 'brightness-110 scale-y-105 shadow-blue-500/30' : 'opacity-90'
-                        }`}
-                        title={`Total: ${(item.total || 0).toLocaleString()}`}
-                      ></div>
-                    </div>
-                  )}
-
-                  {/* X-Axis Month Label */}
-                  <span
-                    className={`text-[10px] sm:text-xs font-bold mt-2 transition-colors ${
-                      isHovered ? 'text-blue-600 scale-110 font-extrabold' : 'text-slate-600'
-                    }`}
-                  >
-                    {item.month}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Interactive Legend & Filter Badges */}
-        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 pt-2">
-          {selectedCategories.map((catId) => {
-            const catObj = CRIME_CATEGORIES.find((c) => c.id === catId);
-            return (
-              <div
-                key={catId}
-                className="flex items-center gap-2 text-xs font-bold text-slate-700 bg-slate-50 px-3 py-1 rounded-full border border-slate-200/80 shadow-sm"
-              >
-                <span className={`h-3 w-3 rounded-full ${catObj?.color} shadow-sm`}></span>
-                <span>{catObj?.label}</span>
+                      <text x={center} y="337" textAnchor="middle" fill="#64748b" fontSize="12">{row.month}</text>
+                    </g>;
+                  })}
+                </svg>
+                {hoveredRow && <div className="pointer-events-none absolute right-4 top-0 min-w-48 rounded-xl border border-slate-200 bg-white p-4 shadow-xl">
+                  <p className="mb-3 text-sm font-bold text-slate-900">{hoveredRow.month} comparison</p>
+                  {selectedYears.map((year) => <div key={year} className="my-2 flex items-center justify-between gap-6 text-sm"><span className="flex items-center gap-2 text-slate-600"><span className="h-2.5 w-2.5 rounded-full" style={{ background: COLORS[year] }} />{year}</span><span className="font-semibold">{hoveredRow[year] === null ? 'No data' : format(hoveredRow[year])}</span></div>)}
+                  {hoveredRow.month === 'Sep' && selectedYears.includes(2026) && <p className="mt-3 text-xs text-amber-700">September 2026 is partial.</p>}
+                </div>}
               </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Tabular Month-by-Month Analytics Breakdown */}
-      <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-          <div>
-            <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-blue-600" />
-              Monthly Data Matrix & Crime Distribution
-            </h4>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Detailed numerical volume per month for selected timeframe.
-            </p>
+            </div> : <div className="flex h-64 flex-col items-center justify-center text-center"><BarChart3 className="mb-3 h-9 w-9 text-slate-300" /><p className="font-semibold text-slate-700">No records for these filters</p><p className="mt-1 text-sm text-slate-500">Choose another year or month range.</p></div>}
           </div>
-          <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
-            {trendsData.length} Months Logged
-          </span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-slate-200 text-slate-500 uppercase tracking-wider font-extrabold bg-slate-50/70">
-                <th className="py-2.5 px-3">Month</th>
-                {selectedCategories.map((catId) => {
-                  const catObj = CRIME_CATEGORIES.find((c) => c.id === catId);
-                  return (
-                    <th key={catId} className="py-2.5 px-3">
-                      {catObj?.label}
-                    </th>
-                  );
-                })}
-                <th className="py-2.5 px-3 font-black text-slate-900">Total Crimes</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {trendsData.map((item) => (
-                <tr key={item.month} className="hover:bg-slate-50/80 transition font-medium text-slate-700">
-                  <td className="py-2.5 px-3 font-bold text-slate-900">{item.month}</td>
-                  {selectedCategories.map((catId) => (
-                    <td key={catId} className="py-2.5 px-3 font-mono">
-                      {(item[catId] || 0).toLocaleString()}
-                    </td>
-                  ))}
-                  <td className="py-2.5 px-3 font-bold text-blue-700 font-mono">
-                    {(item.total || 0).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+          <div className="mt-5 flex flex-wrap justify-between gap-2 border-t border-slate-100 pt-4 text-xs text-slate-500"><span>Recorded incidents per month. Missing records are left blank.</span><span>Source: Chicago crime dataset</span></div>
+        </section>
+      </>}
     </div>
   );
 };
-
 export default TrendsView;

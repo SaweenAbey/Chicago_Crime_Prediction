@@ -112,6 +112,18 @@ def incident_timestamp(year: int, month: int, day_name: str, hour: int) -> dt.da
     return dt.datetime(year, month, 1 + offset, hour)
 
 
+def matching_dates(year: int, month: int, day_name: str, hour: int) -> List[dt.datetime]:
+    """Every date in the given year/month that falls on the requested weekday, at the given hour."""
+    first = incident_timestamp(year, month, day_name, hour)
+    days_in_month = calendar.monthrange(year, month)[1]
+    return [first + dt.timedelta(days=7 * i) for i in range(5) if first.day + 7 * i <= days_in_month]
+
+
+# The form gives an hour, not an exact report time. Predictions are averaged over typical minutes:
+# minute 0 with its training share (reports are often rounded to the hour), the rest spread evenly.
+OTHER_MINUTES = [10, 20, 30, 40, 50]
+
+
 def severity_for(category: str) -> str:
     if category in HIGH_SEVERITY_TYPES:
         return "High"
@@ -121,7 +133,7 @@ def severity_for(category: str) -> str:
 
 
 class CrimePredictor:
-    """Serves the final tuned XGBoost bundle; falls back to the interim model only if it is absent."""
+    """Serves the final XGBoost bundle; falls back to the interim model only if it is absent."""
 
     def __init__(self):
         self.bundle = None
@@ -141,7 +153,7 @@ class CrimePredictor:
             self.interim_model = joblib.load(MODEL_FILE)
             self.interim_encoder = joblib.load(LABEL_ENCODER_FILE)
             print("[WARNING] final_model_bundle.joblib not found - serving the INTERIM Random Forest "
-                  "from train_model.py. Copy the bundle from notebook 12 into backend/models/.")
+                  "from train_model.py. Build it with: python -m backend.train_final_model")
         else:
             print("[ERROR] No model artifacts found in backend/models/.")
 
@@ -157,7 +169,7 @@ class CrimePredictor:
     def model_name(self) -> str:
         if self.is_final:
             selection = self.metrics.get("selection", {})
-            return f"{selection.get('model', 'XGBoost')} ({selection.get('tag', 'final')}) - final selected model"
+            return f"{selection.get('model', 'XGBoost')} - final selected model"
         if self.interim_model is not None:
             return "Random Forest - interim model (final bundle not installed)"
         return "No model loaded"
@@ -177,11 +189,19 @@ class CrimePredictor:
             "domestic": req.domestic,
         }
 
-    def _final_probabilities(self, raw: dict):
+    def _final_probabilities(self, raw: dict, req: CrimePredictionRequest):
         if raw["location_description"] not in known_locations(self.bundle):
             raise InvalidInputError(f"Unknown locationDescription '{raw['location_description']}'.")
-        frame = pd.DataFrame([raw])[RAW_FEATURES]
-        return predict_proba_raw(self.bundle, frame)[0], list(self.bundle["classes"])
+        on_hour = self.bundle["on_the_hour_share"]
+        minute_weights = [(0, on_hour)] + [(m, (1 - on_hour) / len(OTHER_MINUTES)) for m in OTHER_MINUTES]
+        dates = matching_dates(req.year, req.month, req.dayOfWeek, req.hourOfDay)
+        rows, weights = [], []
+        for day in dates:
+            for minute, weight in minute_weights:
+                rows.append({**raw, "date": day.replace(minute=minute)})
+                weights.append(weight / len(dates))
+        probabilities = predict_proba_raw(self.bundle, pd.DataFrame(rows)[RAW_FEATURES])
+        return np.average(probabilities, axis=0, weights=weights), list(self.bundle["classes"])
 
     def _interim_probabilities(self, raw: dict):
         encoder = self.interim_model.named_steps["preprocessor"].named_transformers_["cat"]
@@ -206,7 +226,7 @@ class CrimePredictor:
 
         raw = self._resolve_inputs(req)
         if self.is_final:
-            probabilities, classes = self._final_probabilities(raw)
+            probabilities, classes = self._final_probabilities(raw, req)
         else:
             probabilities, classes = self._interim_probabilities(raw)
 
@@ -234,6 +254,9 @@ class CrimePredictor:
             recommendations.append("Violent-crime category: consider additional visible patrol presence.")
 
         resolved = {k: (v.isoformat() if isinstance(v, dt.datetime) else v) for k, v in raw.items()}
+        if self.is_final:
+            resolved["averaged_over"] = (f"every {req.dayOfWeek} in {calendar.month_name[req.month]} {req.year} "
+                                         f"at {req.hourOfDay:02d}:00-{req.hourOfDay:02d}:59")
         return CrimePredictionResponse(
             success=True,
             predictedCategory=predicted,

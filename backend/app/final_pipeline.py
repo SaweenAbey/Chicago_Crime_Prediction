@@ -1,69 +1,107 @@
-"""Inference pipeline for the final selected model (tuned XGBoost, notebook 12 `tuned_04`).
+"""Feature pipeline for the final XGBoost (databricks/14_Improved_Model).
 
-The constants and `engineer_features` below are copied verbatim from
-databricks/13_Final_Model/13_Final_Model.ipynb so that the backend applies exactly
-the same preprocessing that was used during model development. Do not edit them
-here without changing the notebooks too.
+The transformations below reproduce notebook 14 exactly. They are shared by
+backend/train_final_model.py (which builds the bundle) and by the API (which
+serves it), so training and prediction can never drift apart. Do not edit them
+here without changing notebook 14 too.
 """
 import numpy as np
 import pandas as pd
-from scipy import sparse
 
 RAW_FEATURES = ['date', 'location_description', 'beat', 'district', 'ward', 'community_area', 'latitude', 'longitude', 'domestic']
-CATEGORICAL = ['location_description', 'beat', 'district', 'ward', 'community_area', 'area_group']
-NUMERIC = ['latitude', 'longitude', 'year', 'hour_sin', 'hour_cos', 'day_of_week_sin', 'day_of_week_cos', 'month_sin', 'month_cos', 'is_weekend', 'domestic_int', 'coordinates_missing']
+GEO_CODES = ['beat', 'district', 'ward', 'community_area']
+TOP_K = 12          # crime-mix features are kept for the 12 most common training classes
+SMOOTHING = 20      # pseudo-count pulling rare keys towards the citywide crime mix
 
 
-def engineer_features(raw, coordinate_medians):
-    """Identical deterministic transformation for training and backend prediction."""
+def normalise_raw(raw):
+    """Clean the nine raw inputs the same way notebook 14 does."""
     missing = set(RAW_FEATURES) - set(raw.columns)
     if missing:
         raise ValueError(f"Missing input columns: {sorted(missing)}")
     x = raw[RAW_FEATURES].copy()
-    dates = pd.to_datetime(x["date"], errors="coerce")
-    if dates.isna().any() or dates.dt.tz is not None:
-        raise ValueError("date must contain valid timezone-naive Chicago incident timestamps.")
-    x["year"] = dates.dt.year
-    hour, weekday, month = dates.dt.hour, dates.dt.dayofweek, dates.dt.month
-    for name, values, period in [("hour", hour, 24), ("day_of_week", weekday, 7), ("month", month - 1, 12)]:
-        x[f"{name}_sin"] = np.sin(2 * np.pi * values / period)
-        x[f"{name}_cos"] = np.cos(2 * np.pi * values / period)
-    x["is_weekend"] = (weekday >= 5).astype(int)
-    domestic = x["domestic"].astype("string").str.lower().str.strip()
-    if not domestic.dropna().isin(["true", "false", "1", "0", "1.0", "0.0"]).all():
-        raise ValueError("domestic must be a Boolean, 0/1, or missing.")
-    # Matches Member 3: missing domestic is mapped to 0.
-    x["domestic_int"] = domestic.isin(["true", "1", "1.0"]).astype(int)
-    for col in ["latitude", "longitude"]:
-        x[col] = pd.to_numeric(x[col], errors="raise").astype(float)
-        if np.isinf(x[col]).any():
-            raise ValueError(f"Infinite {col} values are invalid.")
-    absent = x[["latitude", "longitude"]].isna().any(axis=1)
-    x["coordinates_missing"] = absent.astype(int)
-    north = x["latitude"] >= coordinate_medians["latitude"]
-    west = x["longitude"] < coordinate_medians["longitude"]
-    x["area_group"] = np.select(
-        [absent, north & west, north & ~west, ~north & west],
-        ["Unknown", "North-West", "North-East", "South-West"], default="South-East",
-    )
-    for col in CATEGORICAL:
-        if col in ["beat", "district", "ward", "community_area"]:
-            codes = pd.to_numeric(x[col], errors="raise")
-            if (codes.dropna() % 1 != 0).any():
-                raise ValueError(f"{col} must contain whole-number geographic codes.")
-            x[col] = codes.astype("Int64").astype("string")
-        x[col] = x[col].astype("string").fillna("Unknown").astype(str)
-    return x[CATEGORICAL + NUMERIC]
+    x['date'] = pd.to_datetime(x['date'])
+    for c in GEO_CODES:
+        x[c] = pd.to_numeric(x[c], errors='coerce').astype('Int64').astype(str).replace('<NA>', 'Unknown')
+    x['location_description'] = x['location_description'].fillna('Unknown').astype(str).str.strip().str.upper()
+    x['latitude'] = pd.to_numeric(x['latitude'], errors='coerce')
+    x['longitude'] = pd.to_numeric(x['longitude'], errors='coerce')
+    x['domestic_int'] = x['domestic'].astype(str).str.lower().isin(['true', '1', '1.0']).astype(int)
+    return x
+
+
+def mix_keys(x):
+    """Grouping keys for the historical crime-mix features, in notebook 14 order."""
+    hour_block = (x['date'].dt.hour // 6).astype(str)
+    grid = (x['latitude'].round(3) // 0.005).astype(str) + '_' + (x['longitude'].round(3) // 0.006).astype(str)
+    return {
+        'loc': x['location_description'],
+        'beat': x['beat'],
+        'locdist': x['location_description'] + '|' + x['district'],
+        'lochr': x['location_description'] + '|' + hour_block,
+        'domloc': x['domestic_int'].astype(str) + '|' + x['location_description'],
+        'grid': grid,
+    }
+
+
+def base_features(x, frequencies):
+    """Time, reporting-pattern, geographic and frequency features (notebook 14, section 6.1)."""
+    d = x['date']
+    f = pd.DataFrame(index=x.index)
+    f['hour'], f['minute'], f['dow'] = d.dt.hour, d.dt.minute, d.dt.dayofweek
+    f['month'], f['day'] = d.dt.month, d.dt.day
+    f['is_midnight'] = ((d.dt.hour == 0) & (d.dt.minute == 0)).astype(int)
+    f['on_the_hour'] = (d.dt.minute == 0).astype(int)
+    f['first_of_month'] = (d.dt.day == 1).astype(int)
+    f['is_weekend'] = (d.dt.dayofweek >= 5).astype(int)
+    f['domestic_int'] = x['domestic_int']
+    f['latitude'], f['longitude'] = x['latitude'], x['longitude']
+    f['rot45_a'], f['rot45_b'] = x['latitude'] + x['longitude'], x['latitude'] - x['longitude']
+    f['coordinates_missing'] = x['latitude'].isna().astype(int)
+    for c in GEO_CODES:
+        f[c + '_num'] = pd.to_numeric(x[c], errors='coerce')
+    for c in ['location_description', 'beat']:
+        f[c + '_freq'] = x[c].map(frequencies[c]).fillna(0)
+    return f
+
+
+def mix_table(keys, one_hot, prior):
+    """Smoothed share of each top crime type per key (rows of one_hot are training incidents)."""
+    g = pd.DataFrame(one_hot).groupby(np.asarray(keys))
+    s, n = g.sum(), g.size()
+    return pd.DataFrame((s.values + SMOOTHING * prior) / (n.values[:, None] + SMOOTHING), index=s.index)
+
+
+def mix_lookup(table, keys, prior):
+    return table.reindex(np.asarray(keys)).fillna(pd.Series(prior, index=table.columns)).values
+
+
+def add_mix_columns(f, values, tag, top_names):
+    for j, name in enumerate(top_names):
+        f[f'mix_{tag}_{name[:12]}'] = values[:, j]
+
+
+def add_categories(f, x, categories):
+    for c in ['location_description', 'district']:
+        f[c] = pd.Categorical(x[c], categories=categories[c])
+    return f
+
+
+def build_features(raw_rows, bundle):
+    """Model-ready features for new incidents, using the statistics stored in the bundle."""
+    x = normalise_raw(raw_rows)
+    f = base_features(x, bundle['frequencies'])
+    prior = np.asarray(bundle['mix_prior'])
+    for tag, keys in mix_keys(x).items():
+        add_mix_columns(f, mix_lookup(bundle['mix_tables'][tag], keys.astype(str), prior), tag, bundle['top_classes'])
+    f = add_categories(f, x, bundle['categories'])
+    return f[bundle['feature_names']]
 
 
 def predict_proba_raw(bundle, raw_rows):
-    """Same path as notebook 13 `predict_raw`, returning class probabilities instead of labels."""
-    frame = engineer_features(raw_rows, bundle["coordinate_medians"])
-    features = sparse.csr_matrix(bundle["preprocessor"].transform(frame), dtype=np.float32)
-    return bundle["model"].predict_proba(features)
+    return bundle['model'].predict_proba(build_features(raw_rows, bundle))
 
 
 def known_locations(bundle):
-    """location_description values the fitted one-hot encoder saw during training."""
-    encoder = bundle["preprocessor"].named_transformers_["categories"]
-    return set(encoder.categories_[CATEGORICAL.index("location_description")])
+    """location_description values seen when the model was built."""
+    return set(bundle['categories']['location_description'])
