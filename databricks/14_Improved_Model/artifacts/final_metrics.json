@@ -1,0 +1,52 @@
+{
+  "split": {
+    "train_end": "2025-07-01",
+    "validation_end": "2026-01-01"
+  },
+  "previous": {
+    "validation": {
+      "accuracy": 0.37470510386098166,
+      "macro_precision": 0.24544970838095834,
+      "macro_recall": 0.1207179513528108,
+      "macro_f1": 0.12417438909449789,
+      "weighted_f1": 0.30754371157031307,
+      "top3_accuracy": 0.6748127871897939
+    },
+    "test": {
+      "accuracy": 0.36451369842370174,
+      "macro_precision": 0.2381994161274962,
+      "macro_recall": 0.12177419332699412,
+      "macro_f1": 0.12299422315386975,
+      "weighted_f1": 0.29644877783683204,
+      "top3_accuracy": 0.6536845595105337
+    }
+  },
+  "final": {
+    "validation": {
+      "accuracy": 0.3954115393783959,
+      "macro_precision": 0.257203888267641,
+      "macro_recall": 0.14954090654607652,
+      "macro_f1": 0.15987481431230713,
+      "weighted_f1": 0.348698178634132,
+      "top3_accuracy": 0.7004841639745835
+    },
+    "test": {
+      "accuracy": 0.38472527803731277,
+      "macro_precision": 0.24146368459209464,
+      "macro_recall": 0.14775784044302298,
+      "macro_f1": 0.15429503830279656,
+      "weighted_f1": 0.3371383677011015,
+      "top3_accuracy": 0.6813767744657765
+    }
+  },
+  "final_best_iteration": 250,
+  "majority_test_accuracy": 0.21590765243075438,
+  "final_test_with_class_weights": {
+    "accuracy": 0.36061364115856415,
+    "macro_precision": 0.1996899418356929,
+    "macro_recall": 0.17333104132820348,
+    "macro_f1": 0.1749420906501584,
+    "weighted_f1": 0.3584298696569273,
+    "top3_accuracy": 0.6562584767473402
+  }
+}

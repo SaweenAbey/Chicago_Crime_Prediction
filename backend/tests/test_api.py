@@ -24,6 +24,22 @@ def test_health_reports_model_status():
     assert "active_model" in body
 
 
+def test_trends_include_requested_years_and_reconcile_with_overview():
+    response = client.get('/api/stats/trends')
+    assert response.status_code == 200
+    rows = response.json()
+    assert len(rows) == 48
+    assert {r['year'] for r in rows} == {2023, 2024, 2025, 2026}
+    for year in range(2023, 2027):
+        assert [r['monthNumber'] for r in rows if r['year'] == year] == list(range(1, 13))
+    for row in rows:
+        if not row['available']:
+            assert sum(row[k] for k in ('theft', 'battery', 'robbery', 'other')) == 0
+    total = sum(r[k] for r in rows for k in ('theft', 'battery', 'robbery', 'other'))
+    overview = client.get('/api/stats/overview').json()
+    assert total == int(overview['totalIncidentsYear'].replace(',', ''))
+
+
 def test_model_info_returns_recorded_test_metrics():
     body = client.get("/api/model/info").json()
     assert body["metrics"]["selection"]["model"] == "XGBoost"

@@ -78,20 +78,14 @@ class HotspotArea(BaseModel):
 
 class TrendMonth(BaseModel):
     month: str
-    monthNum: int = 1
-    theft: int = 0
-    battery: int = 0
-    robbery: int = 0
-    damage: int = 0
-    assault: int = 0
-    vehicleTheft: int = 0
-    deceptive: int = 0
-    weapons: int = 0
-    narcotics: int = 0
-    burglary: int = 0
-    other: int = 0
-    total: int = 0
-    breakdown: dict = {}
+    year: int
+    monthNumber: int
+    available: bool
+    coverageEnd: Optional[str] = None
+    theft: int
+    battery: int
+    robbery: int
+    other: int
 
 
 class RecentIncident(BaseModel):

@@ -150,7 +150,7 @@ export const MONTHS = [
 export const POLICE_DISTRICTS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 22, 24, 25, 31];
 
 export const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
+  // Dashboard is hidden for the viva presentation.
   { id: 'predict', label: 'Crime Predictor', icon: 'BrainCircuit' },
   { id: 'trends', label: 'Historical Trends', icon: 'TrendingUp' },
   { id: 'map', label: 'Hotspot Map', icon: 'MapPin' }

@@ -44,11 +44,14 @@ Chicago_Crime_Prediction/
 │   │   ├── main.py                     # FastAPI routes & dataset analytics endpoints
 │   │   ├── prediction.py               # ML Predictor engine & Chicago area mapping
 │   │   └── schemas.py                  # Pydantic request/response schemas
-│   ├── models/                         # Serialized ML model artifacts (< 40MB)
-│   │   ├── chicago_crime_model.joblib  # Trained Random Forest classifier
-│   │   └── label_encoder.joblib        # Scikit-learn Target LabelEncoder
+│   ├── models/                         # Serialized ML model artifacts
+│   │   ├── final_model_bundle.joblib   # Final XGBoost + feature statistics (served by the API)
+│   │   ├── final_model_metrics.json    # Validation/test metrics shown on the dashboard
+│   │   ├── chicago_crime_model.joblib  # Interim Random Forest (fallback only)
+│   │   └── label_encoder.joblib        # Label encoder for the interim model
 │   ├── requirements.txt                # Backend Python dependencies
-│   └── train_model.py                  # Standalone model training & compression script
+│   ├── train_final_model.py            # Builds the final XGBoost bundle (same code as notebook 14)
+│   └── train_model.py                  # Interim Random Forest training script
 │
 ├── databricks/                          # 13-Stage Databricks ML Pipeline Notebooks
 │   ├── 00_Master_Pipeline_Runner.ipynb # Master orchestration notebook
@@ -65,6 +68,7 @@ Chicago_Crime_Prediction/
 │   ├── 11_Model_Comparison/           # Stage 11: Cross-model benchmark & metric matrix
 │   ├── 12_Hyperparameter_Tuning/      # Stage 12: Grid search & hyperparameter tuning
 │   ├── 13_Final_Model/                # Stage 13: Champion model freezing & evaluation
+│   ├── 14_Improved_Model/             # Stage 14: Feature engineering for the final XGBoost
 │   └── run_all_pipeline.py            # Headless runner for all 13 stages
 │
 ├── frontend/                            # React + Vite Modern Light Web Application
@@ -145,13 +149,17 @@ source .venv/bin/activate
 pip install -r backend/requirements.txt
 ```
 
-3. (Optional) Retrain or verify the ML model locally:
+3. Put the cleaned dataset at `data/clean/chicago_crime_clean.csv` (exported from Databricks; `data/` is not in git).
+   The dashboard statistics are computed from this file.
+
+4. Build the final XGBoost bundle (about 20 minutes; writes `backend/models/final_model_bundle.joblib`
+   and `final_model_metrics.json`):
 
 ```bash
-python backend/train_model.py
+python -m backend.train_final_model
 ```
 
-4. Start the **FastAPI Backend Server**:
+5. Start the **FastAPI Backend Server**:
 
 ```bash
 uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
@@ -215,6 +223,7 @@ python databricks/run_all_pipeline.py
 | **11** | `11_Model_Comparison` | Comprehensive benchmark matrix (Macro F1, Accuracy, Latency) |
 | **12** | `12_Hyperparameter_Tuning` | Systematic grid search tuning on validation sets |
 | **13** | `13_Final_Model` | Frozen final model evaluation on test hold-out set |
+| **14** | `14_Improved_Model` | Reporting-time and historical crime-mix features; final XGBoost (top-3 test accuracy 68.2%) |
 
 ---
 

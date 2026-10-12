@@ -1,15 +1,15 @@
 import React from 'react';
-import { LayoutDashboard, BrainCircuit, TrendingUp, MapPin, Sparkles } from 'lucide-react';
+import { BrainCircuit, TrendingUp, Sparkles } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 const Sidebar = () => {
   const { currentTab, setCurrentTab } = useApp();
 
   const navItems = [
-    { id: 'dashboard', label: 'Overview Dashboard', icon: LayoutDashboard },
+    // Overview Dashboard is hidden for the viva presentation.
     { id: 'predict', label: 'AI Crime Predictor', icon: BrainCircuit },
     { id: 'trends', label: 'Historical Trends', icon: TrendingUp },
-    { id: 'map', label: 'City Hotspots', icon: MapPin },
+    // City Hotspots is hidden for the viva presentation; MapView.jsx is retained.
   ];
 
   return (
